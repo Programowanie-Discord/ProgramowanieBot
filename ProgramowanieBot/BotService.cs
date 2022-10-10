@@ -34,7 +34,7 @@ internal class BotService : IHostedService
                 LogSeverity.Info => LogLevel.Information,
                 LogSeverity.Error => LogLevel.Error,
                 _ => LogLevel.Warning
-            }, message.Message);
+            }, "{message} {description}", message.Message, message.Description ?? string.Empty);
             return default;
         };
         _forumTagsRoles = configuration.GetRequiredSection("ForumTagsRoles").Get<IReadOnlyDictionary<string, string>>().ToDictionary(x => new Snowflake(x.Key), x => new Snowflake(x.Value));
