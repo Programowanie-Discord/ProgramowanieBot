@@ -50,34 +50,28 @@ internal class BotService : IHostedService
 
     private async ValueTask HandleInteractionAsync(Interaction interaction)
     {
-        switch (interaction.Type)
+        try
         {
-            case InteractionType.ApplicationCommand:
+            await (interaction switch
+            {
+                SlashCommandInteraction slashCommandInteraction => _applicationCommandService.ExecuteAsync(new(slashCommandInteraction, Client)),
+                _ => throw new("Invalid interaction."),
+            });
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                await interaction.SendResponseAsync(InteractionCallback.ChannelMessageWithSource(new()
                 {
-                    try
-                    {
-                        await (interaction switch
-                        {
-                            SlashCommandInteraction slashCommandInteraction => _applicationCommandService.ExecuteAsync(new(slashCommandInteraction, Client)),
-                            _ => throw new("Invalid interaction."),
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        try
-                        {
-                            await interaction.SendResponseAsync(InteractionCallback.ChannelMessageWithSource(new()
-                            {
-                                Content = $"<a:nie:881595378070343710> {ex.Message}",
-                                Flags = MessageFlags.Ephemeral,
-                            }));
-                        }
-                        catch
-                        {
-                        }
-                    }
-                }
-                break;
+                    Content = $"<a:nie:881595378070343710> {ex.Message}",
+                    Flags = MessageFlags.Ephemeral,
+                    AllowedMentions = AllowedMentionsProperties.None,
+                }));
+            }
+            catch
+            {
+            }
         }
     }
 
