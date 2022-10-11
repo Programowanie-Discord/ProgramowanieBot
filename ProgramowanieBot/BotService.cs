@@ -64,7 +64,11 @@ internal class BotService : IHostedService
                     {
                         try
                         {
-                            await interaction.SendResponseAsync(InteractionCallback.ChannelMessageWithSource($"An error occured: {ex.Message}"));
+                            await interaction.SendResponseAsync(InteractionCallback.ChannelMessageWithSource(new()
+                            {
+                                Content = $"<a:nie:881595378070343710> {ex.Message}",
+                                Flags = MessageFlags.Ephemeral,
+                            }));
                         }
                         catch
                         {
