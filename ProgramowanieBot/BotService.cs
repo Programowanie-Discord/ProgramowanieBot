@@ -20,6 +20,7 @@ internal class BotService : IHostedService
     private readonly Snowflake _forumChannelId;
     private readonly ApplicationCommandService<SlashCommandContext> _applicationCommandService;
     private readonly IReadOnlyDictionary<Snowflake, Snowflake> _forumTagsRoles;
+    private readonly string _forumPostStartMessage;
 
     public BotService(ILogger<BotService> logger, IConfiguration configuration)
     {
@@ -37,8 +38,9 @@ internal class BotService : IHostedService
             }, "{message} {description}", message.Message, message.Description ?? string.Empty);
             return default;
         };
-        _forumTagsRoles = configuration.GetRequiredSection("ForumTagsRoles").Get<IReadOnlyDictionary<string, string>>().ToDictionary(x => new Snowflake(x.Key), x => new Snowflake(x.Value));
         _forumChannelId = new(configuration.GetRequiredSection("ForumChannelId").Value);
+        _forumTagsRoles = configuration.GetRequiredSection("ForumTagsRoles").Get<IReadOnlyDictionary<string, string>>().ToDictionary(x => new Snowflake(x.Key), x => new Snowflake(x.Value));
+        _forumPostStartMessage = configuration["ForumPostStartMessage"];
         Client.GuildThreadCreate += HandleThreadCreateAsync;
 
         _applicationCommandService = new();
@@ -91,11 +93,12 @@ internal class BotService : IHostedService
                     return;
 
                 RestMessage message;
+                MessageProperties messageProperties = $"{_forumPostStartMessage}\nPing: <@&{roleId}>";
                 while (true)
                 {
                     try
                     {
-                        message = await thread.SendMessageAsync($"<@&{roleId}>");
+                        message = await thread.SendMessageAsync(messageProperties);
                         break;
                     }
                     catch (RestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
@@ -114,13 +117,31 @@ internal class BotService : IHostedService
                         var mention = user.ToString();
                         if (stringBuilder.Length + mention.Length > 2000)
                         {
-                            tasks.Add(thread.SendMessageAsync(stringBuilder.ToString()).ContinueWith(t => t.Result.DeleteAsync()));
+                            tasks.Add(thread.SendMessageAsync(stringBuilder.ToString()).ContinueWith(async t =>
+                            {
+                                try
+                                {
+                                    await t.Result.DeleteAsync();
+                                }
+                                catch
+                                {
+                                }
+                            }));
                             stringBuilder.Clear();
                         }
                         stringBuilder.Append(mention);
                     }
                     if (stringBuilder.Length != 0)
-                        tasks.Add(thread.SendMessageAsync(stringBuilder.ToString()).ContinueWith(t => t.Result.DeleteAsync()));
+                        tasks.Add(thread.SendMessageAsync(stringBuilder.ToString()).ContinueWith(async t =>
+                        {
+                            try
+                            {
+                                await t.Result.DeleteAsync();
+                            }
+                            catch
+                            {
+                            }
+                        }));
                     await Task.WhenAll(tasks);
                 }
             }
