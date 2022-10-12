@@ -17,14 +17,17 @@ internal class BotService : IHostedService
 {
     public GatewayClient Client { get; }
 
+    private readonly Snowflake _clientId;
     private readonly Snowflake _forumChannelId;
-    private readonly ApplicationCommandService<SlashCommandContext> _applicationCommandService;
     private readonly IReadOnlyDictionary<Snowflake, Snowflake> _forumTagsRoles;
     private readonly string _forumPostStartMessage;
+    private readonly ApplicationCommandService<SlashCommandContext> _applicationCommandService;
 
     public BotService(ILogger<BotService> logger, IConfiguration configuration)
     {
-        Client = new(new(TokenType.Bot, configuration.GetRequiredSection("ProgramowanieBotToken").Value), new()
+        Token token = new(TokenType.Bot, configuration.GetRequiredSection("ProgramowanieBotToken").Value);
+        _clientId = token.Id;
+        Client = new(token, new()
         {
             Intents = GatewayIntent.Guilds | GatewayIntent.GuildUsers | GatewayIntent.GuildPresences,
         });
@@ -66,7 +69,6 @@ internal class BotService : IHostedService
                 {
                     Content = $"<a:nie:881595378070343710> {ex.Message}",
                     Flags = MessageFlags.Ephemeral,
-                    AllowedMentions = AllowedMentionsProperties.None,
                 }));
             }
             catch
@@ -111,32 +113,27 @@ internal class BotService : IHostedService
                         var mention = user.ToString();
                         if (stringBuilder.Length + mention.Length > 2000)
                         {
-                            tasks.Add(thread.SendMessageAsync(stringBuilder.ToString()).ContinueWith(async t =>
-                            {
-                                try
-                                {
-                                    await t.Result.DeleteAsync();
-                                }
-                                catch
-                                {
-                                }
-                            }));
+                            tasks.Add(SendAndDeleteMessageAsync());
                             stringBuilder.Clear();
                         }
                         stringBuilder.Append(mention);
                     }
                     if (stringBuilder.Length != 0)
-                        tasks.Add(thread.SendMessageAsync(stringBuilder.ToString()).ContinueWith(async t =>
-                        {
-                            try
-                            {
-                                await t.Result.DeleteAsync();
-                            }
-                            catch
-                            {
-                            }
-                        }));
+                        tasks.Add(SendAndDeleteMessageAsync());
+
                     await Task.WhenAll(tasks);
+
+                    async Task SendAndDeleteMessageAsync()
+                    {
+                        var message = await thread.SendMessageAsync(stringBuilder.ToString());
+                        try
+                        {
+                            await message.DeleteAsync();
+                        }
+                        catch
+                        {
+                        }
+                    }
                 }
             }
         }
@@ -144,9 +141,8 @@ internal class BotService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        await _applicationCommandService.CreateCommandsAsync(Client.Rest, _clientId);
         await Client.StartAsync();
-        await Client.ReadyAsync;
-        await _applicationCommandService.CreateCommandsAsync(Client.Rest, Client.User!.Id);
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Client.CloseAsync();
