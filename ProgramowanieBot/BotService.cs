@@ -17,6 +17,7 @@ internal class BotService : IHostedService
 {
     public GatewayClient Client { get; }
 
+    private readonly ILogger _logger;
     private readonly Snowflake _clientId;
     private readonly Snowflake _forumChannelId;
     private readonly IReadOnlyDictionary<Snowflake, Snowflake> _forumTagsRoles;
@@ -25,6 +26,8 @@ internal class BotService : IHostedService
 
     public BotService(ILogger<BotService> logger, IConfiguration configuration)
     {
+        _logger = logger;
+
         Token token = new(TokenType.Bot, configuration.GetRequiredSection("ProgramowanieBotToken").Value);
         _clientId = token.Id;
         Client = new(token, new()
@@ -33,7 +36,7 @@ internal class BotService : IHostedService
         });
         Client.Log += message =>
         {
-            logger.Log(message.Severity switch
+            _logger.Log(message.Severity switch
             {
                 LogSeverity.Info => LogLevel.Information,
                 LogSeverity.Error => LogLevel.Error,
@@ -41,6 +44,7 @@ internal class BotService : IHostedService
             }, "{message} {description}", message.Message, message.Description ?? string.Empty);
             return default;
         };
+
         _forumChannelId = new(configuration.GetRequiredSection("ForumChannelId").Value);
         _forumTagsRoles = configuration.GetRequiredSection("ForumTagsRoles").Get<IReadOnlyDictionary<string, string>>().ToDictionary(x => new Snowflake(x.Key), x => new Snowflake(x.Value));
         _forumPostStartMessage = configuration["ForumPostStartMessage"];
@@ -141,7 +145,9 @@ internal class BotService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await _applicationCommandService.CreateCommandsAsync(Client.Rest, _clientId);
+        _logger.LogInformation("Registering application commands");
+        var list = await _applicationCommandService.CreateCommandsAsync(Client.Rest, _clientId);
+        _logger.LogInformation("{count} command(s) successfully registered", list.Count);
         await Client.StartAsync();
     }
 
