@@ -17,5 +17,5 @@ jobs:
         run: dotnet restore
       - name: Build
         run: |
-            touch appsettings.json
+            touch ProgramowanieBot/appsettings.json
             dotnet build --no-restore
