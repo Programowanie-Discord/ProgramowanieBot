@@ -16,5 +16,6 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
-        run: dotnet build --no-restore
-  
+        run: |
+            touch appsettings.json
+            dotnet build --no-restore
