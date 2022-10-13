@@ -89,55 +89,62 @@ internal class BotService : IHostedService
             if (appliedTags != null)
             {
                 Snowflake roleId = default;
-                if (!appliedTags.Any(t => _forumTagsRoles.TryGetValue(t, out roleId)))
-                    return;
-
-                RestMessage message;
-                MessageProperties messageProperties = $"{_forumPostStartMessage}\nPing: <@&{roleId}>";
-                while (true)
+                if (appliedTags.Any(t => _forumTagsRoles.TryGetValue(t, out roleId)))
                 {
-                    try
+                    var message = await SendStartMessageAsync($"{_forumPostStartMessage}\nPing: <@&{roleId}>");
+
+                    if (message.Flags.HasFlag(MessageFlags.FailedToMentionSomeRolesInThread) && Client.Guilds.TryGetValue(args.Thread.GuildId, out var guild))
                     {
-                        message = await thread.SendMessageAsync(messageProperties);
-                        break;
-                    }
-                    catch (RestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
-                    {
-                        if ((await JsonDocument.ParseAsync(await ex.ResponseContent.ReadAsStreamAsync())).RootElement.GetProperty("code").GetInt32() != 40058)
-                            throw;
+                        StringBuilder stringBuilder = new(2000, 2000);
+                        List<Task> tasks = new(1);
+                        foreach (var user in guild.Users.Values.Where(u => u.RoleIds.Contains(roleId)))
+                        {
+                            var mention = user.ToString();
+                            if (stringBuilder.Length + mention.Length > 2000)
+                            {
+                                tasks.Add(SendAndDeleteMessageAsync());
+                                stringBuilder.Clear();
+                            }
+                            stringBuilder.Append(mention);
+                        }
+                        if (stringBuilder.Length != 0)
+                            tasks.Add(SendAndDeleteMessageAsync());
+
+                        await Task.WhenAll(tasks);
+
+                        async Task SendAndDeleteMessageAsync()
+                        {
+                            var message = await thread.SendMessageAsync(stringBuilder.ToString());
+                            try
+                            {
+                                await message.DeleteAsync();
+                            }
+                            catch
+                            {
+                            }
+                        }
                     }
                 }
+                else
+                    await SendStartMessageAsync(_forumPostStartMessage);
 
-                if (message.Flags.HasFlag(MessageFlags.FailedToMentionSomeRolesInThread) && Client.Guilds.TryGetValue(args.Thread.GuildId, out var guild))
+                async Task<RestMessage> SendStartMessageAsync(MessageProperties messageProperties)
                 {
-                    StringBuilder stringBuilder = new(2000, 2000);
-                    List<Task> tasks = new(1);
-                    foreach (var user in guild.Users.Values.Where(u => u.RoleIds.Contains(roleId)))
+                    RestMessage message;
+                    while (true)
                     {
-                        var mention = user.ToString();
-                        if (stringBuilder.Length + mention.Length > 2000)
-                        {
-                            tasks.Add(SendAndDeleteMessageAsync());
-                            stringBuilder.Clear();
-                        }
-                        stringBuilder.Append(mention);
-                    }
-                    if (stringBuilder.Length != 0)
-                        tasks.Add(SendAndDeleteMessageAsync());
-
-                    await Task.WhenAll(tasks);
-
-                    async Task SendAndDeleteMessageAsync()
-                    {
-                        var message = await thread.SendMessageAsync(stringBuilder.ToString());
                         try
                         {
-                            await message.DeleteAsync();
+                            message = await thread.SendMessageAsync(messageProperties);
+                            break;
                         }
-                        catch
+                        catch (RestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
                         {
+                            if ((await JsonDocument.ParseAsync(await ex.ResponseContent.ReadAsStreamAsync())).RootElement.GetProperty("code").GetInt32() != 40058)
+                                throw;
                         }
                     }
+                    return message;
                 }
             }
         }
