@@ -54,14 +54,15 @@ internal class ApplicationCommandService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        await _client.StartAsync();
         _logger.LogInformation("Registering application commands");
         var list = await _applicationCommandService.CreateCommandsAsync(_client.Rest, _clientId);
         _logger.LogInformation("{count} command(s) successfully registered", list.Count);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public async Task StopAsync(CancellationToken cancellationToken)
     {
+        await _client.CloseAsync();
         _client.InteractionCreate -= HandleInteractionAsync;
-        return Task.CompletedTask;
     }
 }

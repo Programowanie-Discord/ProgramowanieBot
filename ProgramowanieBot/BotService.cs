@@ -11,7 +11,7 @@ using NetCord.Rest;
 
 namespace ProgramowanieBot;
 
-internal class BotService : IHostedService
+internal class BotService
 {
     public GatewayClient Client { get; }
 
@@ -112,8 +112,4 @@ internal class BotService : IHostedService
             }
         }
     }
-
-    public Task StartAsync(CancellationToken cancellationToken) => Client.StartAsync();
-
-    public Task StopAsync(CancellationToken cancellationToken) => Client.CloseAsync();
 }
