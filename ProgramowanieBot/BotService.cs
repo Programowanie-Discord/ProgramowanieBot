@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 
 using Microsoft.Extensions.Configuration;
@@ -9,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using NetCord;
 using NetCord.Gateway;
 using NetCord.Rest;
-using NetCord.Services.ApplicationCommands;
 
 namespace ProgramowanieBot;
 
@@ -18,19 +16,18 @@ internal class BotService : IHostedService
     public GatewayClient Client { get; }
 
     private readonly ILogger _logger;
-    private readonly Snowflake _clientId;
     private readonly Snowflake _forumChannelId;
     private readonly IReadOnlyDictionary<Snowflake, Snowflake> _forumTagsRoles;
     private readonly string _forumPostStartMessage;
-    private readonly ApplicationCommandService<SlashCommandContext> _applicationCommandService;
 
-    public BotService(ILogger<BotService> logger, IConfiguration configuration)
+    public BotService(ILogger<BotService> logger, TokenService tokenService, IConfiguration configuration)
     {
         _logger = logger;
+        _forumChannelId = new(configuration.GetRequiredSection("ForumChannelId").Value);
+        _forumTagsRoles = configuration.GetRequiredSection("ForumTagsRoles").Get<IReadOnlyDictionary<string, string>>().ToDictionary(x => new Snowflake(x.Key), x => new Snowflake(x.Value));
+        _forumPostStartMessage = configuration["ForumPostStartMessage"];
 
-        Token token = new(TokenType.Bot, configuration.GetRequiredSection("ProgramowanieBotToken").Value);
-        _clientId = token.Id;
-        Client = new(token, new()
+        Client = new(tokenService.Token, new()
         {
             Intents = GatewayIntent.Guilds | GatewayIntent.GuildUsers | GatewayIntent.GuildPresences,
         });
@@ -44,41 +41,7 @@ internal class BotService : IHostedService
             }, "{message} {description}", message.Message, message.Description ?? string.Empty);
             return default;
         };
-
-        _forumChannelId = new(configuration.GetRequiredSection("ForumChannelId").Value);
-        _forumTagsRoles = configuration.GetRequiredSection("ForumTagsRoles").Get<IReadOnlyDictionary<string, string>>().ToDictionary(x => new Snowflake(x.Key), x => new Snowflake(x.Value));
-        _forumPostStartMessage = configuration["ForumPostStartMessage"];
         Client.GuildThreadCreate += HandleThreadCreateAsync;
-
-        _applicationCommandService = new();
-        _applicationCommandService.AddModules(Assembly.GetEntryAssembly()!);
-        Client.InteractionCreate += HandleInteractionAsync;
-    }
-
-    private async ValueTask HandleInteractionAsync(Interaction interaction)
-    {
-        try
-        {
-            await (interaction switch
-            {
-                SlashCommandInteraction slashCommandInteraction => _applicationCommandService.ExecuteAsync(new(slashCommandInteraction, Client)),
-                _ => throw new("Invalid interaction."),
-            });
-        }
-        catch (Exception ex)
-        {
-            try
-            {
-                await interaction.SendResponseAsync(InteractionCallback.ChannelMessageWithSource(new()
-                {
-                    Content = $"<a:nie:881595378070343710> {ex.Message}",
-                    Flags = MessageFlags.Ephemeral,
-                }));
-            }
-            catch
-            {
-            }
-        }
     }
 
     private async ValueTask HandleThreadCreateAsync(GuildThreadCreateEventArgs args)
@@ -102,19 +65,19 @@ internal class BotService : IHostedService
                             var mention = user.ToString();
                             if (stringBuilder.Length + mention.Length > 2000)
                             {
-                                tasks.Add(SendAndDeleteMessageAsync());
+                                tasks.Add(SendAndDeleteMessageAsync(stringBuilder.ToString()));
                                 stringBuilder.Clear();
                             }
                             stringBuilder.Append(mention);
                         }
                         if (stringBuilder.Length != 0)
-                            tasks.Add(SendAndDeleteMessageAsync());
+                            tasks.Add(SendAndDeleteMessageAsync(stringBuilder.ToString()));
 
                         await Task.WhenAll(tasks);
 
-                        async Task SendAndDeleteMessageAsync()
+                        async Task SendAndDeleteMessageAsync(string content)
                         {
-                            var message = await thread.SendMessageAsync(stringBuilder.ToString());
+                            var message = await thread.SendMessageAsync(content);
                             try
                             {
                                 await message.DeleteAsync();
@@ -150,13 +113,7 @@ internal class BotService : IHostedService
         }
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Registering application commands");
-        var list = await _applicationCommandService.CreateCommandsAsync(Client.Rest, _clientId);
-        _logger.LogInformation("{count} command(s) successfully registered", list.Count);
-        await Client.StartAsync();
-    }
+    public Task StartAsync(CancellationToken cancellationToken) => Client.StartAsync();
 
     public Task StopAsync(CancellationToken cancellationToken) => Client.CloseAsync();
 }

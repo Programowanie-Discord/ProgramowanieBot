@@ -6,7 +6,11 @@ using ProgramowanieBot;
 var builder = Host.CreateDefaultBuilder(args);
 builder.ConfigureServices(services =>
 {
-    services.AddHostedService<BotService>();
+    services.AddSingleton<TokenService>()
+            .AddSingleton<BotService>()
+            .AddHostedService(s => s.GetRequiredService<BotService>())
+            .AddSingleton<ApplicationCommandService>()
+            .AddHostedService(s => s.GetRequiredService<ApplicationCommandService>());
 });
 var host = builder.Build();
 await host.RunAsync();
