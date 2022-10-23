@@ -16,15 +16,15 @@ internal class BotService : IHostedService
     public GatewayClient Client { get; }
 
     private readonly ILogger _logger;
-    private readonly Snowflake _forumChannelId;
-    private readonly IReadOnlyDictionary<Snowflake, Snowflake> _forumTagsRoles;
+    private readonly ulong _forumChannelId;
+    private readonly IReadOnlyDictionary<ulong, ulong> _forumTagsRoles;
     private readonly string _forumPostStartMessage;
 
     public BotService(ILogger<BotService> logger, TokenService tokenService, IConfiguration configuration)
     {
         _logger = logger;
-        _forumChannelId = new(configuration.GetRequiredSection("ForumChannelId").Value);
-        _forumTagsRoles = configuration.GetRequiredSection("ForumTagsRoles").Get<IReadOnlyDictionary<string, string>>().ToDictionary(x => new Snowflake(x.Key), x => new Snowflake(x.Value));
+        _forumChannelId = ulong.Parse(configuration.GetRequiredSection("ForumChannelId").Value);
+        _forumTagsRoles = configuration.GetRequiredSection("ForumTagsRoles").Get<IReadOnlyDictionary<string, string>>().ToDictionary(x => ulong.Parse(x.Key), x => ulong.Parse(x.Value));
         _forumPostStartMessage = configuration["ForumPostStartMessage"];
 
         Client = new(tokenService.Token, new()
@@ -51,7 +51,7 @@ internal class BotService : IHostedService
             var appliedTags = thread.AppliedTags;
             if (appliedTags != null)
             {
-                Snowflake roleId = default;
+                ulong roleId = default;
                 if (appliedTags.Any(t => _forumTagsRoles.TryGetValue(t, out roleId)))
                 {
                     var message = await SendStartMessageAsync($"{_forumPostStartMessage}\nPing: <@&{roleId}>");

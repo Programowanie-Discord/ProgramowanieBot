@@ -14,7 +14,7 @@ internal class ApplicationCommandService : IHostedService
     private readonly ILogger _logger;
     private readonly ApplicationCommandService<SlashCommandContext> _applicationCommandService;
     private readonly GatewayClient _client;
-    private readonly Snowflake _clientId;
+    private readonly ulong _clientId;
 
     public ApplicationCommandService(ILogger<ApplicationCommandService> logger, BotService botService, TokenService tokenService)
     {
