@@ -9,8 +9,8 @@ builder.ConfigureServices(services =>
     services.AddSingleton<TokenService>()
             .AddSingleton<BotService>()
             .AddHostedService(s => s.GetRequiredService<BotService>())
-            .AddSingleton<ApplicationCommandService>()
-            .AddHostedService(s => s.GetRequiredService<ApplicationCommandService>());
+            .AddSingleton<InteractionService>()
+            .AddHostedService(s => s.GetRequiredService<InteractionService>());
 });
 var host = builder.Build();
 await host.RunAsync();
