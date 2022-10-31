@@ -9,11 +9,8 @@ namespace ProgramowanieBot.StringMenuInteractions;
 public class StringMenuMentionInteraction : InteractionModule<StringMenuInteractionContextWithConfig>
 {
     [Interaction("mention")]
-    public async Task MentionAsync(ulong allowedUserId)
+    public async Task MentionAsync([AllowedUser<StringMenuInteractionContextWithConfig>] ulong allowedUserId)
     {
-        if (allowedUserId != Context.User.Id)
-            throw new(Context.Config.OnlyPostCreatorResponse);
-
         await RespondAsync(InteractionCallback.UpdateMessage(new()
         {
             Components = Enumerable.Empty<ComponentProperties>(),

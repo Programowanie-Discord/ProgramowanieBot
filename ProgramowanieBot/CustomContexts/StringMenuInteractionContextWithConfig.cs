@@ -3,7 +3,7 @@ using NetCord.Services.Interactions;
 
 namespace ProgramowanieBot.CustomContexts;
 
-public class StringMenuInteractionContextWithConfig : StringMenuInteractionContext
+public class StringMenuInteractionContextWithConfig : StringMenuInteractionContext, IInteractionContextWithConfig
 {
     public InteractionServiceContextConfig Config { get; }
 

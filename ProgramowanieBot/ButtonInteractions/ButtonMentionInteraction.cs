@@ -9,11 +9,8 @@ namespace ProgramowanieBot.ButtonInteractions;
 public class ButtonMentionInteraction : InteractionModule<ButtonInteractionContextWithConfig>
 {
     [Interaction("mention")]
-    public async Task MentionAsync(ulong allowedUserId, ulong roleId)
+    public async Task MentionAsync([AllowedUser<ButtonInteractionContextWithConfig>] ulong allowedUserId, ulong roleId)
     {
-        if (allowedUserId != Context.User.Id)
-            throw new(Context.Config.OnlyPostCreatorResponse);
-
         await RespondAsync(InteractionCallback.UpdateMessage(new()
         {
             Components = Enumerable.Empty<ComponentProperties>(),

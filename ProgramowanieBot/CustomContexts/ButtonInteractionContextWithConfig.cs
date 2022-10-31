@@ -3,7 +3,7 @@ using NetCord.Services.Interactions;
 
 namespace ProgramowanieBot.CustomContexts;
 
-public class ButtonInteractionContextWithConfig : ButtonInteractionContext
+public class ButtonInteractionContextWithConfig : ButtonInteractionContext, IInteractionContextWithConfig
 {
     public InteractionServiceContextConfig Config { get; }
 
