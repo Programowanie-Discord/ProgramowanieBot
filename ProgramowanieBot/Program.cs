@@ -10,7 +10,9 @@ builder.ConfigureServices(services =>
             .AddSingleton<BotService>()
             .AddHostedService(s => s.GetRequiredService<BotService>())
             .AddSingleton<InteractionService>()
-            .AddHostedService(s => s.GetRequiredService<InteractionService>());
+            .AddHostedService(s => s.GetRequiredService<InteractionService>())
+            .AddSingleton<MessageService>()
+            .AddHostedService(s => s.GetRequiredService<MessageService>());
 });
 var host = builder.Build();
 await host.RunAsync();

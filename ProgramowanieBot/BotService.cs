@@ -28,7 +28,7 @@ internal class BotService : IHostedService
 
         Client = new(tokenService.Token, new()
         {
-            Intents = GatewayIntent.Guilds | GatewayIntent.GuildUsers | GatewayIntent.GuildPresences,
+            Intents = GatewayIntent.Guilds | GatewayIntent.GuildUsers | GatewayIntent.GuildPresences | GatewayIntent.GuildMessages | GatewayIntent.MessageContent,
         });
         Client.Log += message =>
         {
