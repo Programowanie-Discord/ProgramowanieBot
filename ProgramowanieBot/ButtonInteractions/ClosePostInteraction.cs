@@ -1,4 +1,5 @@
 ﻿using NetCord;
+using NetCord.Rest;
 using NetCord.Services.Interactions;
 
 using ProgramowanieBot.CustomContexts;
@@ -10,10 +11,11 @@ public class ClosePostInteraction : InteractionModule<ButtonInteractionContextWi
     [Interaction("close")]
     public async Task CloseAsync([AllowedUserOrModerator<ButtonInteractionContextWithConfig>] ulong threadOwnerId)
     {
-        await ((PublicGuildThread)Context.Channel).ModifyAsync(c => c.Archived = true);
         await RespondAsync(InteractionCallback.ChannelMessageWithSource(new()
         {
             Content = Context.Config.PostCloseResponse,
+            Flags = MessageFlags.Ephemeral,
         }));
+        await Context.Client.Rest.ModifyGuildThreadAsync(Context.Interaction.ChannelId.GetValueOrDefault(), c => c.Archived = true);
     }
 }
