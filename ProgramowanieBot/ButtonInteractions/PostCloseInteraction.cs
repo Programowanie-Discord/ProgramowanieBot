@@ -18,11 +18,11 @@ public class PostCloseInteraction : InteractionModule<ButtonInteractionContextWi
                 Content = Context.Config.PostCloseResponse,
                 Flags = MessageFlags.Ephemeral,
             }));
-            await Context.Client.Rest.ModifyGuildThreadAsync(Context.Interaction.ChannelId.GetValueOrDefault(), c => c.Archived = true);
         }
         catch (RestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
         {
             return;
         }
+        await Context.Client.Rest.ModifyGuildThreadAsync(Context.Interaction.ChannelId.GetValueOrDefault(), c => c.Archived = true);
     }
 }
