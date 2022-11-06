@@ -1,5 +1,3 @@
-﻿using System.Threading;
-
 using NetCord;
 using NetCord.Rest;
 using NetCord.Services.Interactions;
