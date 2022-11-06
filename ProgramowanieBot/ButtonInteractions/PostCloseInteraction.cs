@@ -21,7 +21,10 @@ public class PostCloseInteraction : InteractionModule<ButtonInteractionContextWi
         }
         catch (RestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
         {
-            return;
+            if (await ex.GetDiscordStatusCodeAsync() == 50083)
+                return;
+            else
+                throw;
         }
         await Context.Client.Rest.ModifyGuildThreadAsync(Context.Interaction.ChannelId.GetValueOrDefault(), c => c.Archived = true);
     }
