@@ -17,7 +17,7 @@ public class StringMenuMentionInteraction : InteractionModule<StringMenuInteract
             {
                 new ActionRowProperties(new ButtonProperties[]
                 {
-                    new ActionButtonProperties($"close:{threadOwnerId}", "Zamknij", ButtonStyle.Danger),
+                    new ActionButtonProperties($"close:{threadOwnerId}", Context.Config.PostCloseButton, ButtonStyle.Danger),
                 }),
             },
         }));
