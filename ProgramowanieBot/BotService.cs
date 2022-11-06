@@ -17,7 +17,7 @@ internal class BotService : IHostedService
     private readonly IReadOnlyDictionary<ulong, ulong> _forumTagsRoles;
     private readonly string _forumPostStartMessage;
     private readonly string _mentionMenuPlaceholder;
-    private readonly string _closePost;
+    private readonly string _postCloseButton;
 
     public BotService(ILogger<BotService> logger, TokenService tokenService, IConfiguration configuration)
     {
@@ -26,7 +26,7 @@ internal class BotService : IHostedService
         _forumTagsRoles = configuration.GetRequiredSection("ForumTagsRoles").Get<IReadOnlyDictionary<string, string>>().ToDictionary(x => ulong.Parse(x.Key), x => ulong.Parse(x.Value));
         _forumPostStartMessage = configuration["ForumPostStartMessage"];
         _mentionMenuPlaceholder = configuration["MentionMenuPlaceholder"];
-        _closePost = configuration["ClosePost"];
+        _postCloseButton = configuration["PostCloseButton"];
 
         Client = new(tokenService.Token, new()
         {
@@ -59,7 +59,7 @@ internal class BotService : IHostedService
                         roles.Add(role);
                 }
                 List<ComponentProperties> components = new(2);
-                ActionButtonProperties closeButton = new($"close:{thread.OwnerId}", _closePost, ButtonStyle.Danger);
+                ActionButtonProperties closeButton = new($"close:{thread.OwnerId}", _postCloseButton, ButtonStyle.Danger);
                 switch (roles.Count)
                 {
                     case 0:

@@ -6,7 +6,7 @@ using ProgramowanieBot.CustomContexts;
 
 namespace ProgramowanieBot.ButtonInteractions;
 
-public class ClosePostInteraction : InteractionModule<ButtonInteractionContextWithConfig>
+public class PostCloseInteraction : InteractionModule<ButtonInteractionContextWithConfig>
 {
     [Interaction("close")]
     public async Task CloseAsync([AllowedUserOrModerator<ButtonInteractionContextWithConfig>] ulong threadOwnerId)
