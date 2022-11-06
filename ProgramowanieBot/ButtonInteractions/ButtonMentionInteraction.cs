@@ -23,6 +23,6 @@ public class ButtonMentionInteraction : InteractionModule<ButtonInteractionConte
                 }),
             },
         }));
-        await ThreadHelper.MentionRoleAsync(Context.Client.Rest, Context.Channel.Id, roleId, Context.Guild!);
+        await ThreadHelper.MentionRoleAsync(Context.Client.Rest, Context.Interaction.ChannelId.GetValueOrDefault(), roleId, Context.Guild!);
     }
 }
