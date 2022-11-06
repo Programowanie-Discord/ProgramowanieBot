@@ -1,5 +1,3 @@
-﻿using System.Net.Http.Headers;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
