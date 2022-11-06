@@ -61,7 +61,7 @@ internal class BotService : IHostedService
                         roles.Add(role);
                 }
                 List<ComponentProperties> components = new(2);
-                ActionButtonProperties closeButton = new($"close:{thread.OwnerId}", "Zamknij", ButtonStyle.Danger);
+                ActionButtonProperties closeButton = new($"close:{thread.OwnerId}", _closePost, ButtonStyle.Danger);
                 switch (roles.Count)
                 {
                     case 0:
