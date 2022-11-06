@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -17,6 +17,7 @@ internal class BotService : IHostedService
     private readonly IReadOnlyDictionary<ulong, ulong> _forumTagsRoles;
     private readonly string _forumPostStartMessage;
     private readonly string _mentionMenuPlaceholder;
+    private readonly string _postCloseButtonLabel;
 
     public BotService(ILogger<BotService> logger, TokenService tokenService, IConfiguration configuration)
     {
@@ -25,6 +26,7 @@ internal class BotService : IHostedService
         _forumTagsRoles = configuration.GetRequiredSection("ForumTagsRoles").Get<IReadOnlyDictionary<string, string>>().ToDictionary(x => ulong.Parse(x.Key), x => ulong.Parse(x.Value));
         _forumPostStartMessage = configuration["ForumPostStartMessage"];
         _mentionMenuPlaceholder = configuration["MentionMenuPlaceholder"];
+        _postCloseButtonLabel = configuration["PostCloseButtonLabel"];
 
         Client = new(tokenService.Token, new()
         {
@@ -56,46 +58,46 @@ internal class BotService : IHostedService
                     if (_forumTagsRoles.TryGetValue(tag, out var roleId) && guild.Roles.TryGetValue(roleId, out var role))
                         roles.Add(role);
                 }
-                ComponentProperties[]? components;
+                List<ComponentProperties> components = new(2);
+                ActionButtonProperties closeButton = new($"close:{thread.OwnerId}", _postCloseButtonLabel, ButtonStyle.Danger);
                 switch (roles.Count)
                 {
                     case 0:
-                        components = null;
+                        components.Add(new ActionRowProperties(new ButtonProperties[]
+                        {
+                            closeButton,
+                        }));
                         break;
                     case 1:
                         var role = roles[0];
-                        components = new[]
+                        components.Add(new ActionRowProperties(new ButtonProperties[]
                         {
-                            new ActionRowProperties(new ButtonProperties[]
-                            {
-                                new ActionButtonProperties($"mention:{thread.OwnerId}:{role.Id}", role.Name, new(1035215423056134256), ButtonStyle.Success),
-                            }),
-                        };
+                            new ActionButtonProperties($"mention:{thread.OwnerId}:{role.Id}", role.Name, new(1035215423056134256), ButtonStyle.Success),
+                            closeButton,
+                        }));
                         break;
                     default:
                         EmojiProperties emoji = new(1035215423056134256);
-                        components = new[]
+                        components.Add(new StringMenuProperties($"mention:{thread.OwnerId}", roles.Select(r => new StringMenuSelectOptionProperties(r.Name, r.Id.ToString())
                         {
-                            new StringMenuProperties($"mention:{thread.OwnerId}", roles.Select(r => new StringMenuSelectOptionProperties(r.Name, r.Id.ToString())
-                            {
-                                Emoji = emoji,
-                            }))
-                            {
-                                Placeholder = _mentionMenuPlaceholder,
-                            },
-                        };
-                        break;
+                            Emoji = emoji,
+                        }))
+                        {
+                            Placeholder = _mentionMenuPlaceholder,
+                        });
+                        goto case 0;
                 }
                 MessageProperties messageProperties = new()
                 {
                     Content = _forumPostStartMessage,
                     Components = components,
                 };
+                RestMessage message;
                 while (true)
                 {
                     try
                     {
-                        await thread.SendMessageAsync(messageProperties);
+                        message = await thread.SendMessageAsync(messageProperties);
                         break;
                     }
                     catch (RestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
@@ -104,6 +106,7 @@ internal class BotService : IHostedService
                             throw;
                     }
                 }
+                await thread.PinMessageAsync(message.Id);
             }
         }
     }

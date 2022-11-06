@@ -9,12 +9,18 @@ namespace ProgramowanieBot.StringMenuInteractions;
 public class StringMenuMentionInteraction : InteractionModule<StringMenuInteractionContextWithConfig>
 {
     [Interaction("mention")]
-    public async Task MentionAsync([AllowedUser<StringMenuInteractionContextWithConfig>] ulong allowedUserId)
+    public async Task MentionAsync([AllowedUser<StringMenuInteractionContextWithConfig>] ulong threadOwnerId)
     {
         await RespondAsync(InteractionCallback.UpdateMessage(new()
         {
-            Components = Enumerable.Empty<ComponentProperties>(),
+            Components = new ComponentProperties[]
+            {
+                new ActionRowProperties(new ButtonProperties[]
+                {
+                    new ActionButtonProperties($"close:{threadOwnerId}", Context.Config.PostCloseButtonLabel, ButtonStyle.Danger),
+                }),
+            },
         }));
-        await ThreadHelper.MentionRoleAsync(Context.Client.Rest, Context.Channel.Id, ulong.Parse(Context.SelectedValues[0]), Context.Guild!);
+        await ThreadHelper.MentionRoleAsync(Context.Client.Rest, Context.Interaction.ChannelId.GetValueOrDefault(), ulong.Parse(Context.SelectedValues[0]), Context.Guild!);
     }
 }
