@@ -4,5 +4,5 @@ namespace ProgramowanieBot.CustomContexts;
 
 internal interface IInteractionContextWithConfig : IContext
 {
-    public InteractionServiceContextConfig Config { get; }
+    public InteractionServiceConfig Config { get; }
 }

@@ -5,9 +5,9 @@ namespace ProgramowanieBot.CustomContexts;
 
 public class StringMenuInteractionContextWithConfig : StringMenuInteractionContext, IInteractionContextWithConfig
 {
-    public InteractionServiceContextConfig Config { get; }
+    public InteractionServiceConfig Config { get; }
 
-    public StringMenuInteractionContextWithConfig(StringMenuInteraction interaction, GatewayClient client, InteractionServiceContextConfig config) : base(interaction, client)
+    public StringMenuInteractionContextWithConfig(StringMenuInteraction interaction, GatewayClient client, InteractionServiceConfig config) : base(interaction, client)
     {
         Config = config;
     }

@@ -3,7 +3,7 @@
 using NetCord;
 using NetCord.Services.ApplicationCommands;
 
-namespace ProgramowanieBot.Commands;
+namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands;
 
 public class PingCommand : ApplicationCommandModule<SlashCommandContext>
 {
@@ -17,10 +17,7 @@ public class PingCommand : ApplicationCommandModule<SlashCommandContext>
     {
         public IReadOnlyDictionary<CultureInfo, string>? Translations => new Dictionary<CultureInfo, string>()
         {
-            {
-                new("pl"),
-                "Pokazuje opóźnienie bota"
-            },
+            { new("pl"), "Pokazuje opóźnienie bota" },
         };
     }
 }

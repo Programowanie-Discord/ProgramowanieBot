@@ -5,9 +5,9 @@ namespace ProgramowanieBot.CustomContexts;
 
 public class ButtonInteractionContextWithConfig : ButtonInteractionContext, IInteractionContextWithConfig
 {
-    public InteractionServiceContextConfig Config { get; }
+    public InteractionServiceConfig Config { get; }
 
-    public ButtonInteractionContextWithConfig(ButtonInteraction interaction, GatewayClient client, InteractionServiceContextConfig config) : base(interaction, client)
+    public ButtonInteractionContextWithConfig(ButtonInteraction interaction, GatewayClient client, InteractionServiceConfig config) : base(interaction, client)
     {
         Config = config;
     }

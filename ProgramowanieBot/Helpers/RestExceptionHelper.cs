@@ -2,7 +2,7 @@
 
 using NetCord.Rest;
 
-namespace ProgramowanieBot;
+namespace ProgramowanieBot.Helpers;
 
 internal static class RestExceptionHelper
 {

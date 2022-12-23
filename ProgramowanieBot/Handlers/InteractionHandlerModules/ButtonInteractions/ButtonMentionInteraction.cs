@@ -3,8 +3,9 @@ using NetCord.Rest;
 using NetCord.Services.Interactions;
 
 using ProgramowanieBot.CustomContexts;
+using ProgramowanieBot.Helpers;
 
-namespace ProgramowanieBot.ButtonInteractions;
+namespace ProgramowanieBot.Handlers.InteractionHandlerModules.ButtonInteractions;
 
 public class ButtonMentionInteraction : InteractionModule<ButtonInteractionContextWithConfig>
 {

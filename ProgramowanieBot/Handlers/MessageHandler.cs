@@ -1,38 +1,34 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using NetCord.Gateway;
 using NetCord.Rest;
 
-namespace ProgramowanieBot;
+namespace ProgramowanieBot.Handlers;
 
-internal class MessageService : IHostedService
+internal class MessageHandler : BaseHandler
 {
-    private readonly ILogger<MessageService> _logger;
-    private readonly GatewayClient _client;
-    private readonly HttpClient _httpClient = new();
+    private readonly HttpClient _httpClient;
 
-    public MessageService(ILogger<MessageService> logger, BotService botService)
+    public MessageHandler(GatewayClient client, ILogger<MessageHandler> logger, HttpClient httpClient) : base(client, logger)
     {
-        _logger = logger;
-        _client = botService.Client;
+        _httpClient = httpClient;
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    public override ValueTask StartAsync(CancellationToken cancellationToken)
     {
-        _client.MessageCreate += HandleMessageCreate;
-        return Task.CompletedTask;
-    }
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _client.MessageCreate -= HandleMessageCreate;
-        return Task.CompletedTask;
+        Client.MessageCreate += HandleMessageCreateAsync;
+        return default;
     }
 
-    private async ValueTask HandleMessageCreate(Message message)
+    public override ValueTask StopAsync(CancellationToken cancellationToken)
+    {
+        Client.MessageCreate -= HandleMessageCreateAsync;
+        return default;
+    }
+    private async ValueTask HandleMessageCreateAsync(Message message)
     {
         if (message.Author.IsBot)
             return;
@@ -55,7 +51,7 @@ internal class MessageService : IHostedService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to download GitHub file content, url: {url}", url);
+                Logger.LogError(ex, "Failed to download GitHub file content, url: {url}", url);
                 return;
             }
 
@@ -192,7 +188,7 @@ internal class MessageService : IHostedService
         }
         Break:
         if (stringBuilder.Length != 0)
-            await _client.Rest.SendMessageAsync(message.ChannelId, new()
+            await Client.Rest.SendMessageAsync(message.ChannelId, new()
             {
                 Content = stringBuilder.ToString(),
                 AllowedMentions = AllowedMentionsProperties.None,

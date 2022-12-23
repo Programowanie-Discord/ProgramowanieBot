@@ -1,7 +1,5 @@
 ﻿using System.Reflection;
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using NetCord;
@@ -11,36 +9,42 @@ using NetCord.Services.ApplicationCommands;
 using NetCord.Services.Interactions;
 
 using ProgramowanieBot.CustomContexts;
+using ProgramowanieBot.Helpers;
 
-namespace ProgramowanieBot;
+namespace ProgramowanieBot.Handlers;
 
-internal class InteractionService : IHostedService
+internal class InteractionHandler : BaseHandler<InteractionServiceConfig>
 {
-    private readonly ILogger _logger;
     private readonly ApplicationCommandService<SlashCommandContext> _applicationCommandService;
     private readonly InteractionService<ButtonInteractionContextWithConfig> _buttonInteractionService;
     private readonly InteractionService<StringMenuInteractionContextWithConfig> _stringMenuInteractionService;
-    private readonly GatewayClient _client;
-    private readonly ulong _clientId;
-    private readonly InteractionServiceContextConfig _config;
 
-    public InteractionService(ILogger<InteractionService> logger, BotService botService, TokenService tokenService, IConfiguration configuration)
+    private readonly TokenService _token;
+
+    public InteractionHandler(GatewayClient client, ILogger<InteractionHandler> logger, ConfigService config, TokenService token) : base(client, logger, config.Interaction)
     {
-        _logger = logger;
-
         _applicationCommandService = new();
         _buttonInteractionService = new();
         _stringMenuInteractionService = new();
+        _token = token;
+    }
 
+    public override async ValueTask StartAsync(CancellationToken cancellationToken)
+    {
         var assembly = Assembly.GetEntryAssembly()!;
         _applicationCommandService.AddModules(assembly);
         _buttonInteractionService.AddModules(assembly);
         _stringMenuInteractionService.AddModules(assembly);
+        Logger.LogInformation("Registering application commands");
+        var list = await _applicationCommandService.CreateCommandsAsync(Client.Rest, _token.Token.Id);
+        Logger.LogInformation("{count} command(s) successfully registered", list.Count);
+        Client.InteractionCreate += HandleInteractionAsync;
+    }
 
-        _client = botService.Client;
-        _client.InteractionCreate += HandleInteractionAsync;
-        _clientId = tokenService.Token.Id;
-        _config = new(configuration);
+    public override ValueTask StopAsync(CancellationToken cancellationToken)
+    {
+        Client.InteractionCreate -= HandleInteractionAsync;
+        return default;
     }
 
     private async ValueTask HandleInteractionAsync(Interaction interaction)
@@ -49,9 +53,9 @@ internal class InteractionService : IHostedService
         {
             await (interaction switch
             {
-                SlashCommandInteraction slashCommandInteraction => _applicationCommandService.ExecuteAsync(new(slashCommandInteraction, _client)),
-                ButtonInteraction buttonInteraction => _buttonInteractionService.ExecuteAsync(new(buttonInteraction, _client, _config)),
-                StringMenuInteraction stringMenuInteraction => _stringMenuInteractionService.ExecuteAsync(new(stringMenuInteraction, _client, _config)),
+                SlashCommandInteraction slashCommandInteraction => _applicationCommandService.ExecuteAsync(new(slashCommandInteraction, Client)),
+                ButtonInteraction buttonInteraction => _buttonInteractionService.ExecuteAsync(new(buttonInteraction, Client, Config)),
+                StringMenuInteraction stringMenuInteraction => _stringMenuInteractionService.ExecuteAsync(new(stringMenuInteraction, Client, Config)),
                 _ => throw new("Invalid interaction."),
             });
         }
@@ -75,18 +79,5 @@ internal class InteractionService : IHostedService
             {
             }
         }
-    }
-
-    public async Task StartAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Registering application commands");
-        var list = await _applicationCommandService.CreateCommandsAsync(_client.Rest, _clientId);
-        _logger.LogInformation("{count} command(s) successfully registered", list.Count);
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _client.InteractionCreate -= HandleInteractionAsync;
-        return Task.CompletedTask;
     }
 }

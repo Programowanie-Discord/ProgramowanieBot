@@ -3,8 +3,9 @@ using NetCord.Rest;
 using NetCord.Services.Interactions;
 
 using ProgramowanieBot.CustomContexts;
+using ProgramowanieBot.Helpers;
 
-namespace ProgramowanieBot.StringMenuInteractions;
+namespace ProgramowanieBot.Handlers.InteractionHandlerModules.StringMenuInteractions;
 
 public class StringMenuMentionInteraction : InteractionModule<StringMenuInteractionContextWithConfig>
 {
