@@ -35,7 +35,7 @@ public class ResolveCommand : ApplicationCommandModule<ExtendedSlashCommandConte
             await transaction.CommitAsync();
         }
         await RespondAsync(InteractionCallback.ChannelMessageWithSource($"**{Context.Config.Emojis.Success} {Context.Config.Interaction.PostResolvedResponse}**"));
-        await thread.ModifyAsync(t => (t.Archived, t.Locked) = (true, true));
+        await thread.ModifyAsync(t => t.Archived = t.Locked = true);
     }
 
     public class NameTranslationsProvider : ITranslationsProvider
