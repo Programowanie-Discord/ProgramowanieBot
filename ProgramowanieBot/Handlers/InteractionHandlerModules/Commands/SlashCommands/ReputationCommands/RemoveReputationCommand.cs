@@ -29,7 +29,7 @@ public class RemoveReputationCommand : ApplicationCommandModule<ExtendedSlashCom
         await using (var context = Context.Provider.GetRequiredService<DataContext>())
         {
             await using var transaction = await context.Database.BeginTransactionAsync();
-            await ReputationHelper.AddReputationAsync(context, user.Id, reputation);
+            await ReputationHelper.AddReputationAsync(context, user.Id, -reputation);
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
         }
