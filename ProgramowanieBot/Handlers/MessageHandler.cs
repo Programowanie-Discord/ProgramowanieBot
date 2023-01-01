@@ -61,7 +61,7 @@ internal partial class MessageHandler : BaseHandler<GuildThreadHandlerConfig>
 
             ValueTask HandleTypingStartOnceAsync(TypingStartEventArgs args)
             {
-                if (args.UserId != message.Author.Id)
+                if (args.UserId != message.Author.Id || args.ChannelId != message.ChannelId)
                     return default;
 
                 Client.TypingStart -= HandleTypingStartOnceAsync;
@@ -72,7 +72,7 @@ internal partial class MessageHandler : BaseHandler<GuildThreadHandlerConfig>
 
             ValueTask HandleMessageCreateOnceAsync(Message newMessage)
             {
-                if (newMessage.Author.Id != message.Author.Id)
+                if (newMessage.Author.Id != message.Author.Id || newMessage.ChannelId != message.ChannelId)
                     return default;
 
                 Client.TypingStart -= HandleTypingStartOnceAsync;
