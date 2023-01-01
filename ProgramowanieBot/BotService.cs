@@ -18,26 +18,18 @@ internal class BotService : IHostedService
     {
         _logger = logger;
         _client = client;
-        _client.Log += message =>
-        {
-            _logger.Log(message.Severity switch
-            {
-                LogSeverity.Info => LogLevel.Information,
-                LogSeverity.Error => LogLevel.Error,
-                _ => LogLevel.Warning
-            }, "{message} {description}", message.Message, message.Description ?? string.Empty);
-            return default;
-        };
         _handlers = handlers;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        _client.Log += LogAsync;
+        await _client.StartAsync();
+        await _client.ReadyAsync;
         _logger.LogInformation("Starting handlers");
         foreach (var handler in _handlers)
             await handler.StartAsync(cancellationToken);
         _logger.LogInformation("Handlers started");
-        await _client.StartAsync();
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
@@ -47,5 +39,17 @@ internal class BotService : IHostedService
         foreach (var handler in _handlers)
             await handler.StopAsync(cancellationToken);
         _logger.LogInformation("Handlers stopped");
+        _client.Log -= LogAsync;
+    }
+
+    private ValueTask LogAsync(LogMessage message)
+    {
+        _logger.Log(message.Severity switch
+        {
+            LogSeverity.Info => LogLevel.Information,
+            LogSeverity.Error => LogLevel.Error,
+            _ => LogLevel.Warning
+        }, message.Exception, "{message} {description}", message.Message, message.Description ?? string.Empty);
+        return default;
     }
 }

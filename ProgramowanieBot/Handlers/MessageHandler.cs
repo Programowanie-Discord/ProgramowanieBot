@@ -3,16 +3,18 @@ using System.Text.RegularExpressions;
 
 using Microsoft.Extensions.Logging;
 
+using NetCord;
 using NetCord.Gateway;
 using NetCord.Rest;
 
 namespace ProgramowanieBot.Handlers;
 
-internal class MessageHandler : BaseHandler
+internal partial class MessageHandler : BaseHandler<GuildThreadHandlerConfig>
 {
     private readonly HttpClient _httpClient;
+    private static readonly TimeSpan _typingTimeout = TimeSpan.FromSeconds(6);
 
-    public MessageHandler(GatewayClient client, ILogger<MessageHandler> logger, HttpClient httpClient) : base(client, logger)
+    public MessageHandler(GatewayClient client, ILogger<MessageHandler> logger, HttpClient httpClient, ConfigService config, IServiceProvider provider) : base(client, logger, config.GuildThread, provider)
     {
         _httpClient = httpClient;
     }
@@ -28,12 +30,62 @@ internal class MessageHandler : BaseHandler
         Client.MessageCreate -= HandleMessageCreateAsync;
         return default;
     }
+
     private async ValueTask HandleMessageCreateAsync(Message message)
     {
         if (message.Author.IsBot)
             return;
 
-        var matches = Regex.Matches(message.Content, @"github\.com/(?<path1>[a-zA-Z\d-]+/[\w.-]+)/blob/(?<path2>[\w/\.%-]+)((#L(?<line1>\d+))(-L(?<line2>\d+))?)?");
+        var task = HandleMessageInHelpChannelAsync(message);
+        await HandleGitHubCodeAsync(message);
+        await task;
+    }
+
+    private async ValueTask HandleMessageInHelpChannelAsync(Message message)
+    {
+        if (message.Channel is PublicGuildThread thread && thread.ParentId == Config.HelpChannelId)
+        {
+            TaskCompletionSource taskCompletionSource = new();
+            Client.TypingStart += HandleTypingStartOnceAsync;
+            Client.MessageCreate += HandleMessageCreateOnceAsync;
+            await taskCompletionSource.Task.WaitAsync(_typingTimeout).ContinueWith(async task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Client.TypingStart -= HandleTypingStartOnceAsync;
+                    Client.MessageCreate -= HandleMessageCreateOnceAsync;
+                    await message.AddReactionAsync("⬆️");
+                    await message.AddReactionAsync("⬇️");
+                }
+            });
+
+            ValueTask HandleTypingStartOnceAsync(TypingStartEventArgs args)
+            {
+                if (args.UserId != message.Author.Id)
+                    return default;
+
+                Client.TypingStart -= HandleTypingStartOnceAsync;
+                Client.MessageCreate -= HandleMessageCreateOnceAsync;
+                taskCompletionSource.TrySetResult();
+                return default;
+            }
+
+            ValueTask HandleMessageCreateOnceAsync(Message newMessage)
+            {
+                if (newMessage.Author.Id != message.Author.Id)
+                    return default;
+
+                Client.TypingStart -= HandleTypingStartOnceAsync;
+                Client.MessageCreate -= HandleMessageCreateOnceAsync;
+                taskCompletionSource.TrySetResult();
+                return default;
+            }
+        }
+    }
+
+    private async ValueTask HandleGitHubCodeAsync(Message message)
+    {
+        var matches = GetGitHubRegex().Matches(message.Content);
         if (matches.Count == 0)
             return;
 
@@ -194,4 +246,7 @@ internal class MessageHandler : BaseHandler
                 AllowedMentions = AllowedMentionsProperties.None,
             });
     }
+
+    [GeneratedRegex(@"github\.com/(?<path1>[a-zA-Z\d-]+/[\w.-]+)/blob/(?<path2>[\w/\.%-]+)((#L(?<line1>\d+))(-L(?<line2>\d+))?)?")]
+    private static partial Regex GetGitHubRegex();
 }

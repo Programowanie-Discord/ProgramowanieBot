@@ -8,9 +8,9 @@ using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers;
 
-internal class GuildThreadCreateHandler : BaseHandler<GuildThreadServiceConfig>
+internal class GuildThreadCreateHandler : BaseHandler<GuildThreadHandlerConfig>
 {
-    public GuildThreadCreateHandler(GatewayClient client, ILogger<GuildThreadCreateHandler> logger, ConfigService config) : base(client, logger, config.GuildThread)
+    public GuildThreadCreateHandler(GatewayClient client, ILogger<GuildThreadCreateHandler> logger, ConfigService config, IServiceProvider provider) : base(client, logger, config.GuildThread, provider)
     {
     }
 
@@ -28,7 +28,7 @@ internal class GuildThreadCreateHandler : BaseHandler<GuildThreadServiceConfig>
 
     private async ValueTask HandleGuildThreadCreateAsync(GuildThreadCreateEventArgs args)
     {
-        if (args.NewlyCreated && args.Thread is PublicGuildThread thread && thread.ParentId == Config.ForumChannelId && Client.Guilds.TryGetValue(thread.GuildId, out var guild))
+        if (args.NewlyCreated && args.Thread is PublicGuildThread thread && thread.ParentId == Config.HelpChannelId && Client.Guilds.TryGetValue(thread.GuildId, out var guild))
         {
             var appliedTags = thread.AppliedTags;
             if (appliedTags != null)
@@ -36,7 +36,7 @@ internal class GuildThreadCreateHandler : BaseHandler<GuildThreadServiceConfig>
                 List<GuildRole> roles = new(appliedTags.Count);
                 foreach (var tag in appliedTags)
                 {
-                    if (Config.ForumTagsRoles.TryGetValue(tag, out var roleId) && guild.Roles.TryGetValue(roleId, out var role))
+                    if (Config.HelpTagsRoles.TryGetValue(tag, out var roleId) && guild.Roles.TryGetValue(roleId, out var role))
                         roles.Add(role);
                 }
                 List<ComponentProperties> components = new(2);
@@ -70,7 +70,7 @@ internal class GuildThreadCreateHandler : BaseHandler<GuildThreadServiceConfig>
                 }
                 MessageProperties messageProperties = new()
                 {
-                    Content = Config.ForumPostStartMessage,
+                    Content = Config.HelpPostStartMessage,
                     Components = components,
                 };
                 RestMessage message;

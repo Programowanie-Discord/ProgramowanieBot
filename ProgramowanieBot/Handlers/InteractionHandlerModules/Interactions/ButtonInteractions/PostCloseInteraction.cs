@@ -2,21 +2,21 @@
 using NetCord.Rest;
 using NetCord.Services.Interactions;
 
-using ProgramowanieBot.CustomContexts;
+using ProgramowanieBot.Handlers.InteractionHandlerModules.PreconditionAttributes;
 using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.ButtonInteractions;
 
-public class PostCloseInteraction : InteractionModule<ButtonInteractionContextWithConfig>
+public class PostCloseInteraction : InteractionModule<ExtendedButtonInteractionContext>
 {
     [Interaction("close")]
-    public async Task CloseAsync([AllowedUserOrModerator<ButtonInteractionContextWithConfig>] ulong threadOwnerId)
+    public async Task CloseAsync([AllowedUserOrModerator<ExtendedButtonInteractionContext>] ulong threadOwnerId)
     {
         try
         {
             await RespondAsync(InteractionCallback.ChannelMessageWithSource(new()
             {
-                Content = Context.Config.PostCloseResponse,
+                Content = $"**{Context.Config.Emojis.Success} {Context.Config.Interaction.PostClosedResponse}**",
                 Flags = MessageFlags.Ephemeral,
             }));
         }

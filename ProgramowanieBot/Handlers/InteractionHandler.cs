@@ -8,22 +8,32 @@ using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 using NetCord.Services.Interactions;
 
-using ProgramowanieBot.CustomContexts;
+using ProgramowanieBot.Handlers.InteractionHandlerModules;
 using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers;
 
-internal class InteractionHandler : BaseHandler<InteractionServiceConfig>
+internal class InteractionHandler : BaseHandler<ConfigService>
 {
-    private readonly ApplicationCommandService<SlashCommandContext> _applicationCommandService;
-    private readonly InteractionService<ButtonInteractionContextWithConfig> _buttonInteractionService;
-    private readonly InteractionService<StringMenuInteractionContextWithConfig> _stringMenuInteractionService;
+    private readonly ApplicationCommandServiceManager _applicationCommandServiceManager;
+    private readonly ApplicationCommandService<ExtendedSlashCommandContext> _applicationCommandService;
+    private readonly ApplicationCommandService<ExtendedUserCommandContext> _userCommandService;
+    private readonly InteractionService<ExtendedButtonInteractionContext> _buttonInteractionService;
+    private readonly InteractionService<ExtendedStringMenuInteractionContext> _stringMenuInteractionService;
 
     private readonly TokenService _token;
 
-    public InteractionHandler(GatewayClient client, ILogger<InteractionHandler> logger, ConfigService config, TokenService token) : base(client, logger, config.Interaction)
+    public InteractionHandler(GatewayClient client, ILogger<InteractionHandler> logger, ConfigService config, TokenService token, IServiceProvider provider) : base(client, logger, config, provider)
     {
-        _applicationCommandService = new();
+        _applicationCommandServiceManager = new();
+        _applicationCommandService = new(new()
+        {
+            DefaultDMPermission = false,
+        });
+        _userCommandService = new(new()
+        {
+            DefaultDMPermission = false,
+        });
         _buttonInteractionService = new();
         _stringMenuInteractionService = new();
         _token = token;
@@ -31,13 +41,19 @@ internal class InteractionHandler : BaseHandler<InteractionServiceConfig>
 
     public override async ValueTask StartAsync(CancellationToken cancellationToken)
     {
+        _applicationCommandServiceManager.AddService(_applicationCommandService);
+        _applicationCommandServiceManager.AddService(_userCommandService);
+
         var assembly = Assembly.GetEntryAssembly()!;
         _applicationCommandService.AddModules(assembly);
+        _userCommandService.AddModules(assembly);
         _buttonInteractionService.AddModules(assembly);
         _stringMenuInteractionService.AddModules(assembly);
+
         Logger.LogInformation("Registering application commands");
-        var list = await _applicationCommandService.CreateCommandsAsync(Client.Rest, _token.Token.Id);
+        var list = await _applicationCommandServiceManager.CreateCommandsAsync(Client.Rest, _token.Token.Id);
         Logger.LogInformation("{count} command(s) successfully registered", list.Count);
+
         Client.InteractionCreate += HandleInteractionAsync;
     }
 
@@ -53,9 +69,10 @@ internal class InteractionHandler : BaseHandler<InteractionServiceConfig>
         {
             await (interaction switch
             {
-                SlashCommandInteraction slashCommandInteraction => _applicationCommandService.ExecuteAsync(new(slashCommandInteraction, Client)),
-                ButtonInteraction buttonInteraction => _buttonInteractionService.ExecuteAsync(new(buttonInteraction, Client, Config)),
-                StringMenuInteraction stringMenuInteraction => _stringMenuInteractionService.ExecuteAsync(new(stringMenuInteraction, Client, Config)),
+                SlashCommandInteraction slashCommandInteraction => _applicationCommandService.ExecuteAsync(new(slashCommandInteraction, Client, Config, Provider)),
+                UserCommandInteraction userCommandInteraction => _userCommandService.ExecuteAsync(new(userCommandInteraction, Client, Config, Provider)),
+                ButtonInteraction buttonInteraction => _buttonInteractionService.ExecuteAsync(new(buttonInteraction, Client, Config, Provider)),
+                StringMenuInteraction stringMenuInteraction => _stringMenuInteractionService.ExecuteAsync(new(stringMenuInteraction, Client, Config, Provider)),
                 _ => throw new("Invalid interaction."),
             });
         }
@@ -63,7 +80,7 @@ internal class InteractionHandler : BaseHandler<InteractionServiceConfig>
         {
             InteractionMessageProperties message = new()
             {
-                Content = $"<a:nie:881595378070343710> {ex.Message}",
+                Content = $"**{Config.Emojis.Error} {ex.Message}**",
                 Flags = MessageFlags.Ephemeral,
             };
             try

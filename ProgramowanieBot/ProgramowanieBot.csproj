@@ -8,9 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
-    <PackageReference Include="NetCord" Version="1.0.0-alpha.129" />
-    <PackageReference Include="NetCord.Services" Version="1.0.0-alpha.51" />
+    <PackageReference Include="NetCord" Version="1.0.0-alpha.138" />
+    <PackageReference Include="NetCord.Services" Version="1.0.0-alpha.60" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.1" />
   </ItemGroup>
 
   <ItemGroup>

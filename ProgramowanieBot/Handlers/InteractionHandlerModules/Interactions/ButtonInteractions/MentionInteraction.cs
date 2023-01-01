@@ -2,15 +2,15 @@ using NetCord;
 using NetCord.Rest;
 using NetCord.Services.Interactions;
 
-using ProgramowanieBot.CustomContexts;
+using ProgramowanieBot.Handlers.InteractionHandlerModules.PreconditionAttributes;
 using ProgramowanieBot.Helpers;
 
-namespace ProgramowanieBot.Handlers.InteractionHandlerModules.ButtonInteractions;
+namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Interactions.ButtonInteractions;
 
-public class ButtonMentionInteraction : InteractionModule<ButtonInteractionContextWithConfig>
+public class MentionInteraction : InteractionModule<ExtendedButtonInteractionContext>
 {
     [Interaction("mention")]
-    public async Task MentionAsync([AllowedUser<ButtonInteractionContextWithConfig>] ulong threadOwnerId, ulong roleId)
+    public async Task MentionAsync([AllowedUser<ExtendedButtonInteractionContext>] ulong threadOwnerId, ulong roleId)
     {
         await RespondAsync(InteractionCallback.UpdateMessage(new()
         {
@@ -18,7 +18,7 @@ public class ButtonMentionInteraction : InteractionModule<ButtonInteractionConte
             {
                 new ActionRowProperties(new ButtonProperties[]
                 {
-                    new ActionButtonProperties($"close:{threadOwnerId}", Context.Config.PostCloseButtonLabel, ButtonStyle.Danger),
+                    new ActionButtonProperties($"close:{threadOwnerId}", Context.Config.GuildThread.PostCloseButtonLabel, ButtonStyle.Danger),
                 }),
             },
         }));
