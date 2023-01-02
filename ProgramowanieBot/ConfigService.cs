@@ -31,11 +31,13 @@ public class InteractionHandlerConfig
     public string OnlyPostCreatorResponse { get; init; }
     public string OnlyPostCreatorOrModeratorResponse { get; init; }
     public string PostClosedResponse { get; init; }
-    public string PostAlreadyResolved { get; init; }
+    public string PostAlreadyResolvedResponse { get; init; }
     public string PostResolvedResponse { get; init; }
     public string ShowProfileOnBotResponse { get; init; }
     public string SelectedBotAsHelperResponse { get; init; }
     public string NotHelpChannelResponse { get; init; }
+    public string WaitingForApprovalResponse { get; init; }
+    public string ApproveButtonLabel { get; init; }
 }
 
 public class GuildThreadHandlerConfig

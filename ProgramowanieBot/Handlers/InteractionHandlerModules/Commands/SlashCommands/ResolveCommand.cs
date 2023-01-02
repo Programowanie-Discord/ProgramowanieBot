@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 using NetCord;
+using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 
 using ProgramowanieBot.Data;
 using ProgramowanieBot.Handlers.InteractionHandlerModules.PreconditionAttributes;
-using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands.SlashCommands;
 
@@ -18,24 +18,24 @@ public class ResolveCommand : ApplicationCommandModule<ExtendedSlashCommandConte
     [SlashCommand("resolve", "Closes your post and specifies who helped you", NameTranslationsProviderType = typeof(NameTranslationsProvider), DescriptionTranslationsProviderType = typeof(DescriptionTranslationsProvider))]
     public async Task ResolveAsync([SlashCommandParameter(NameTranslationsProviderType = typeof(HelperNameTranslationsProvider), Description = "User who helped you", DescriptionTranslationsProviderType = typeof(HelperDescriptionTranslationsProvider))][NoBotAttribute<ExtendedSlashCommandContext>] User helper)
     {
-        var thread = (GuildThread)Context.Channel!;
         await using (var context = Context.Provider.GetRequiredService<DataContext>())
         {
-            await using var transaction = await context.Database.BeginTransactionAsync();
-            if (await context.ResolvedPosts.AnyAsync(p => p.Id == thread.Id))
-                throw new(Context.Config.Interaction.PostAlreadyResolved);
-
-            await context.ResolvedPosts.AddAsync(new()
-            {
-                Id = Context.Interaction.ChannelId.GetValueOrDefault(),
-            });
-            if (helper.Id != Context.User.Id)
-                await ReputationHelper.AddReputationAsync(context, helper.Id, 5);
-            await context.SaveChangesAsync();
-            await transaction.CommitAsync();
+            var channelId = Context.Interaction.ChannelId.GetValueOrDefault();
+            if (await context.ResolvedPosts.AnyAsync(p => p.Id == channelId))
+                throw new(Context.Config.Interaction.PostAlreadyResolvedResponse);
         }
-        await RespondAsync(InteractionCallback.ChannelMessageWithSource($"**{Context.Config.Emojis.Success} {Context.Config.Interaction.PostResolvedResponse}**"));
-        await thread.ModifyAsync(t => t.Archived = t.Locked = true);
+
+        await RespondAsync(InteractionCallback.ChannelMessageWithSource(new()
+        {
+            Content = $"**{Context.Config.Emojis.Success} {Context.Config.Interaction.WaitingForApprovalResponse}**",
+            Components = new ComponentProperties[]
+            {
+                new ActionRowProperties(new ButtonProperties[]
+                {
+                    new ActionButtonProperties($"approve:{helper.Id}", Context.Config.Interaction.ApproveButtonLabel, ButtonStyle.Success),
+                }),
+            },
+        }));
     }
 
     public class NameTranslationsProvider : ITranslationsProvider
