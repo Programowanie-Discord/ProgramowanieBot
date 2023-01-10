@@ -15,10 +15,9 @@ public class ApproveInteraction : InteractionModule<ExtendedButtonInteractionCon
 {
     [InteractionRequireUserChannelPermissions<ExtendedButtonInteractionContext>(Permissions.Administrator)]
     [Interaction("approve")]
-    public async Task ApproveAsync(ulong helperId)
+    public async Task ApproveAsync(ulong helperId, bool giveReputation)
     {
         var channelId = Context.Interaction.ChannelId.GetValueOrDefault();
-        var user = Context.User;
         await using (var context = Context.Provider.GetRequiredService<DataContext>())
         {
             await using var transaction = await context.Database.BeginTransactionAsync();
@@ -29,7 +28,7 @@ public class ApproveInteraction : InteractionModule<ExtendedButtonInteractionCon
             {
                 Id = channelId,
             });
-            if (helperId != user.Id)
+            if (giveReputation)
                 await ReputationHelper.AddReputationAsync(context, helperId, 5);
 
             await context.SaveChangesAsync();
@@ -40,6 +39,7 @@ public class ApproveInteraction : InteractionModule<ExtendedButtonInteractionCon
             Content = $"**{Context.Config.Emojis.Success} {Context.Config.Interaction.PostResolvedResponse}**",
             Components = Enumerable.Empty<ComponentProperties>(),
         }));
+        var user = Context.User;
         await Context.Client.Rest.ModifyGuildThreadAsync(channelId, t => t.Archived = true, new()
         {
             AuditLogReason = $"Approved by: {user.Username}#{user.Discriminator:D4} ({user.Id})",

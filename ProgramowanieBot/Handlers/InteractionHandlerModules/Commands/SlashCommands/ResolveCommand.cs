@@ -16,7 +16,7 @@ public class ResolveCommand : ApplicationCommandModule<ExtendedSlashCommandConte
 {
     [RequireThreadOwnerOfHelpChannel<ExtendedSlashCommandContext>]
     [SlashCommand("resolve", "Closes your post and specifies who helped you", NameTranslationsProviderType = typeof(NameTranslationsProvider), DescriptionTranslationsProviderType = typeof(DescriptionTranslationsProvider))]
-    public async Task ResolveAsync([SlashCommandParameter(NameTranslationsProviderType = typeof(HelperNameTranslationsProvider), Description = "User who helped you", DescriptionTranslationsProviderType = typeof(HelperDescriptionTranslationsProvider))][NoBotAttribute<ExtendedSlashCommandContext>] User helper)
+    public async Task ResolveAsync([SlashCommandParameter(NameTranslationsProviderType = typeof(HelperNameTranslationsProvider), Description = "User who helped you", DescriptionTranslationsProviderType = typeof(HelperDescriptionTranslationsProvider))][NoBot<ExtendedSlashCommandContext>] User helper)
     {
         await using (var context = Context.Provider.GetRequiredService<DataContext>())
         {
@@ -32,7 +32,7 @@ public class ResolveCommand : ApplicationCommandModule<ExtendedSlashCommandConte
             {
                 new ActionRowProperties(new ButtonProperties[]
                 {
-                    new ActionButtonProperties($"approve:{helper.Id}", Context.Config.Interaction.ApproveButtonLabel, ButtonStyle.Success),
+                    new ActionButtonProperties($"approve:{helper.Id}:{helper != Context.User}", Context.Config.Interaction.ApproveButtonLabel, ButtonStyle.Success),
                 }),
             },
         }));

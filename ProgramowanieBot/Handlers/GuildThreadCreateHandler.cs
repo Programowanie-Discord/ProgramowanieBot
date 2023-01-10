@@ -33,7 +33,7 @@ internal class GuildThreadCreateHandler : BaseHandler<GuildThreadHandlerConfig>
             var appliedTags = thread.AppliedTags;
             if (appliedTags != null)
             {
-                List<GuildRole> roles = new(appliedTags.Count);
+                List<Role> roles = new(appliedTags.Count);
                 foreach (var tag in appliedTags)
                 {
                     if (Config.HelpTagsRoles.TryGetValue(tag, out var roleId) && guild.Roles.TryGetValue(roleId, out var role))
