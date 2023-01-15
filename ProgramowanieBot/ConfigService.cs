@@ -38,6 +38,7 @@ public class InteractionHandlerConfig
     public string NotHelpChannelResponse { get; init; }
     public string WaitingForApprovalResponse { get; init; }
     public string ApproveButtonLabel { get; init; }
+    public string AlreadyMentionedResponse { get; init; }
 }
 
 public class GuildThreadHandlerConfig
