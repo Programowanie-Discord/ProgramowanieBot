@@ -12,11 +12,12 @@ namespace ProgramowanieBot.Handlers;
 internal partial class MessageHandler : BaseHandler<GuildThreadHandlerConfig>
 {
     private readonly HttpClient _httpClient;
-    private static readonly TimeSpan _typingTimeout = TimeSpan.FromSeconds(6);
+    private readonly TimeSpan _typingTimeout;
 
     public MessageHandler(GatewayClient client, ILogger<MessageHandler> logger, HttpClient httpClient, ConfigService config, IServiceProvider provider) : base(client, logger, config.GuildThread, provider)
     {
         _httpClient = httpClient;
+        _typingTimeout = TimeSpan.FromSeconds(config.GuildThread.ReactionTypingTimeoutSeconds);
     }
 
     public override ValueTask StartAsync(CancellationToken cancellationToken)

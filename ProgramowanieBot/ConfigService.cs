@@ -45,6 +45,7 @@ public class GuildThreadHandlerConfig
 {
     public ulong HelpChannelId { get; init; }
     public IReadOnlyDictionary<ulong, ulong> HelpTagsRoles { get; init; }
+    public double ReactionTypingTimeoutSeconds { get; init; }
     public string HelpPostStartMessage { get; init; }
     public string MentionMenuPlaceholder { get; init; }
     public string PostCloseButtonLabel { get; init; }
