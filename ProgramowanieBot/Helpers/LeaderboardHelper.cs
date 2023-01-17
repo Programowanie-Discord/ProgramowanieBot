@@ -12,13 +12,14 @@ namespace ProgramowanieBot.Helpers;
 
 internal static class LeaderboardHelper
 {
-    public static async Task<InteractionMessageProperties> CreateLeaderboardAsync<TContext>(TContext context, int page) where TContext : IExtendedContext, IUserContext
+    public static async Task<InteractionMessageProperties> CreateLeaderboardAsync<TContext>(TContext context, int page) where TContext : IExtendedContext, IUserContext, IGuildContext
     {
         string description;
         bool more;
         await using (var dataContext = context.Provider.GetRequiredService<DataContext>())
         {
-            var a = await dataContext.Profiles.OrderByDescending(p => p.Reputation).Skip(page * 25).Take(26).Select(p => $"<@{p.UserId}>: {p.Reputation}").ToArrayAsync();
+            var users = context.Guild!.Users;
+            var a = await dataContext.Profiles.OrderByDescending(p => p.Reputation).AsAsyncEnumerable().Where(p => users.ContainsKey(p.UserId)).Skip(page * 25).Take(26).Select(p => $"<@{p.UserId}>: {p.Reputation}").ToArrayAsync();
             var length = a.Length;
             description = string.Join('\n', a, 0, Math.Min(length, 25));
             more = length == 26;
