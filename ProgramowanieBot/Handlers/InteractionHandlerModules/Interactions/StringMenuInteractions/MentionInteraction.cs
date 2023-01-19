@@ -7,7 +7,7 @@ using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.StringMenuInteractions;
 
-public class StringMenuMentionInteraction : InteractionModule<ExtendedStringMenuInteractionContext>
+public class MentionInteraction : InteractionModule<ExtendedStringMenuInteractionContext>
 {
     [Interaction("mention")]
     public async Task MentionAsync([AllowedUser<ExtendedStringMenuInteractionContext>] ulong threadOwnerId)

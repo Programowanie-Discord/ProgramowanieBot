@@ -16,17 +16,21 @@ namespace ProgramowanieBot.Handlers;
 internal class InteractionHandler : BaseHandler<ConfigService>
 {
     private readonly ApplicationCommandServiceManager _applicationCommandServiceManager;
-    private readonly ApplicationCommandService<ExtendedSlashCommandContext> _applicationCommandService;
+
+    private readonly ApplicationCommandService<ExtendedSlashCommandContext> _slashCommandService;
     private readonly ApplicationCommandService<ExtendedUserCommandContext> _userCommandService;
+    private readonly ApplicationCommandService<ExtendedMessageCommandContext> _messageCommandService;
+
     private readonly InteractionService<ExtendedButtonInteractionContext> _buttonInteractionService;
     private readonly InteractionService<ExtendedStringMenuInteractionContext> _stringMenuInteractionService;
+    private readonly InteractionService<ExtendedModalSubmitInteractionContext> _modalSubmitInteractionService;
 
     private readonly TokenService _token;
 
     public InteractionHandler(GatewayClient client, ILogger<InteractionHandler> logger, ConfigService config, TokenService token, IServiceProvider provider) : base(client, logger, config, provider)
     {
         _applicationCommandServiceManager = new();
-        _applicationCommandService = new(new()
+        _slashCommandService = new(new()
         {
             DefaultDMPermission = false,
         });
@@ -34,21 +38,30 @@ internal class InteractionHandler : BaseHandler<ConfigService>
         {
             DefaultDMPermission = false,
         });
+        _messageCommandService = new(new()
+        {
+            DefaultDMPermission = false,
+        });
         _buttonInteractionService = new();
         _stringMenuInteractionService = new();
+        _modalSubmitInteractionService = new();
         _token = token;
     }
 
     public override async ValueTask StartAsync(CancellationToken cancellationToken)
     {
-        _applicationCommandServiceManager.AddService(_applicationCommandService);
+        _applicationCommandServiceManager.AddService(_slashCommandService);
         _applicationCommandServiceManager.AddService(_userCommandService);
+        _applicationCommandServiceManager.AddService(_messageCommandService);
 
         var assembly = Assembly.GetEntryAssembly()!;
-        _applicationCommandService.AddModules(assembly);
+        _slashCommandService.AddModules(assembly);
         _userCommandService.AddModules(assembly);
+        _messageCommandService.AddModules(assembly);
+
         _buttonInteractionService.AddModules(assembly);
         _stringMenuInteractionService.AddModules(assembly);
+        _modalSubmitInteractionService.AddModules(assembly);
 
         Logger.LogInformation("Registering application commands");
         var list = await _applicationCommandServiceManager.CreateCommandsAsync(Client.Rest, _token.Token.Id);
@@ -69,10 +82,12 @@ internal class InteractionHandler : BaseHandler<ConfigService>
         {
             await (interaction switch
             {
-                SlashCommandInteraction slashCommandInteraction => _applicationCommandService.ExecuteAsync(new(slashCommandInteraction, Client, Config, Provider)),
+                SlashCommandInteraction slashCommandInteraction => _slashCommandService.ExecuteAsync(new(slashCommandInteraction, Client, Config, Provider)),
                 UserCommandInteraction userCommandInteraction => _userCommandService.ExecuteAsync(new(userCommandInteraction, Client, Config, Provider)),
+                MessageCommandInteraction messageCommandInteraction => _messageCommandService.ExecuteAsync(new(messageCommandInteraction, Client, Config, Provider)),
                 ButtonInteraction buttonInteraction => _buttonInteractionService.ExecuteAsync(new(buttonInteraction, Client, Config, Provider)),
                 StringMenuInteraction stringMenuInteraction => _stringMenuInteractionService.ExecuteAsync(new(stringMenuInteraction, Client, Config, Provider)),
+                ModalSubmitInteraction modalSubmitInteraction => _modalSubmitInteractionService.ExecuteAsync(new(modalSubmitInteraction, Client, Config, Provider)),
                 _ => throw new("Invalid interaction."),
             });
         }

@@ -8,7 +8,7 @@ using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers;
 
-internal class GuildThreadCreateHandler : BaseHandler<GuildThreadHandlerConfig>
+internal class GuildThreadCreateHandler : BaseHandler<ConfigService.GuildThreadHandlerConfig>
 {
     public GuildThreadCreateHandler(GatewayClient client, ILogger<GuildThreadCreateHandler> logger, ConfigService config, IServiceProvider provider) : base(client, logger, config.GuildThread, provider)
     {

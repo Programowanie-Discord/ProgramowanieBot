@@ -9,7 +9,7 @@ using NetCord.Rest;
 
 namespace ProgramowanieBot.Handlers;
 
-internal partial class MessageHandler : BaseHandler<GuildThreadHandlerConfig>
+internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHandlerConfig>
 {
     private readonly HttpClient _httpClient;
     private readonly TimeSpan _typingTimeout;

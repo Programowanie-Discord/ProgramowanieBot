@@ -24,61 +24,70 @@ public class ConfigService
     public DatabaseConfig Database { get; init; }
     public DailyReputationHandlerConfig DailyReputationReactions { get; init; }
     public EmojisConfig Emojis { get; init; }
-}
 
-public class InteractionHandlerConfig
-{
-    public string OnlyPostCreatorResponse { get; init; }
-    public string OnlyPostCreatorOrModeratorResponse { get; init; }
-    public string PostClosedResponse { get; init; }
-    public string PostAlreadyResolvedResponse { get; init; }
-    public string PostResolvedResponse { get; init; }
-    public string ShowProfileOnBotResponse { get; init; }
-    public string SelectedBotAsHelperResponse { get; init; }
-    public string NotHelpChannelResponse { get; init; }
-    public string WaitingForApprovalResponse { get; init; }
-    public string ApproveButtonLabel { get; init; }
-    public string AlreadyMentionedResponse { get; init; }
-}
-
-public class GuildThreadHandlerConfig
-{
-    public ulong HelpChannelId { get; init; }
-    public IReadOnlyDictionary<ulong, ulong> HelpTagsRoles { get; init; }
-    public double ReactionTypingTimeoutSeconds { get; init; }
-    public string HelpPostStartMessage { get; init; }
-    public string MentionMenuPlaceholder { get; init; }
-    public string PostCloseButtonLabel { get; init; }
-}
-
-public class DatabaseConfig
-{
-    public string Host { get; init; }
-    public string Database { get; init; }
-    public ushort? Port { get; init; }
-    public string Username { get; init; }
-    public string Password { get; init; }
-
-    public string CreateConnectionString()
+    public class InteractionHandlerConfig
     {
-        NpgsqlConnectionStringBuilder builder = new();
-        builder.Host = Host;
-        builder.Database = Database;
-        if (Port.HasValue)
-            builder.Port = Port.GetValueOrDefault();
-        builder.Username = Username;
-        builder.Password = Password;
-        return builder.ToString();
+        public string OnlyPostCreatorResponse { get; init; }
+        public string OnlyPostCreatorOrModeratorResponse { get; init; }
+        public string PostClosedResponse { get; init; }
+        public string PostAlreadyResolvedResponse { get; init; }
+        public string PostResolvedResponse { get; init; }
+        public string ShowProfileOnBotResponse { get; init; }
+        public string SelectedBotAsHelperResponse { get; init; }
+        public string NotHelpChannelResponse { get; init; }
+        public string WaitingForApprovalResponse { get; init; }
+        public string ApproveButtonLabel { get; init; }
+        public string AlreadyMentionedResponse { get; init; }
+        public StealEmojiConfig StealEmoji { get; init; }
+
+        public class StealEmojiConfig
+        {
+            public string NoEmojisFoundResponse { get; init; }
+            public string AddEmojiModalTitle { get; init; }
+            public string AddEmojiModalNameInputLabel { get; init; }
+            public string StealEmojisMenuPlaceholder { get; init; }
+        }
     }
-}
 
-public class DailyReputationHandlerConfig
-{
-    public ulong ChannelId { get; init; }
-}
+    public class GuildThreadHandlerConfig
+    {
+        public ulong HelpChannelId { get; init; }
+        public IReadOnlyDictionary<ulong, ulong> HelpTagsRoles { get; init; }
+        public double ReactionTypingTimeoutSeconds { get; init; }
+        public string HelpPostStartMessage { get; init; }
+        public string MentionMenuPlaceholder { get; init; }
+        public string PostCloseButtonLabel { get; init; }
+    }
 
-public class EmojisConfig
-{
-    public string Success { get; init; }
-    public string Error { get; init; }
+    public class DatabaseConfig
+    {
+        public string Host { get; init; }
+        public string Database { get; init; }
+        public ushort? Port { get; init; }
+        public string Username { get; init; }
+        public string Password { get; init; }
+
+        public string CreateConnectionString()
+        {
+            NpgsqlConnectionStringBuilder builder = new();
+            builder.Host = Host;
+            builder.Database = Database;
+            if (Port.HasValue)
+                builder.Port = Port.GetValueOrDefault();
+            builder.Username = Username;
+            builder.Password = Password;
+            return builder.ToString();
+        }
+    }
+
+    public class DailyReputationHandlerConfig
+    {
+        public ulong ChannelId { get; init; }
+    }
+
+    public class EmojisConfig
+    {
+        public string Success { get; init; }
+        public string Error { get; init; }
+    }
 }

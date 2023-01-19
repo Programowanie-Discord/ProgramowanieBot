@@ -12,7 +12,7 @@ using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers;
 
-internal class ReactionHandler : BaseHandler<GuildThreadHandlerConfig>
+internal class ReactionHandler : BaseHandler<ConfigService.GuildThreadHandlerConfig>
 {
     private record struct MessageAuthor(bool IsBot, ulong Id);
 
