@@ -38,7 +38,9 @@ public class ConfigService
         public string WaitingForApprovalResponse { get; init; }
         public string ApproveButtonLabel { get; init; }
         public string AlreadyMentionedResponse { get; init; }
+        public string NotOwnMessageResponse { get; init; }
         public StealEmojiConfig StealEmoji { get; init; }
+        public ReactionCommandsConfig ReactionCommands { get; init; }
 
         public class StealEmojiConfig
         {
@@ -46,6 +48,12 @@ public class ConfigService
             public string AddEmojiModalTitle { get; init; }
             public string AddEmojiModalNameInputLabel { get; init; }
             public string StealEmojisMenuPlaceholder { get; init; }
+        }
+
+        public class ReactionCommandsConfig
+        {
+            public string ReactionsAddedResponse { get; init; }
+            public string ReactionsRemovedResponse { get; init; }
         }
     }
 
