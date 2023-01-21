@@ -33,7 +33,7 @@ internal class DailyReputationHandler : BaseHandler<ConfigService>
         {
             await _runAsync!;
         }
-        catch (TaskCanceledException)
+        catch (OperationCanceledException)
         {
         }
     }
