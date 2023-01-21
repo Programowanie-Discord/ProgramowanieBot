@@ -52,7 +52,7 @@ internal class DailyReputationHandler : BaseHandler<ConfigService>
                 StringBuilder stringBuilder = new(4096, 4096);
                 foreach (var profile in profiles)
                 {
-                    var line = $"<@{profile.UserId}>: {profile.ReputationToday}";
+                    var line = $"<@{profile.UserId}>: {profile.ReputationToday:+#;-#}";
                     profile.ReputationToday = 0;
                     if (stringBuilder.Length + line.Length >= 4096)
                     {
