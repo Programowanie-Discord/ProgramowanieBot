@@ -32,11 +32,11 @@ internal static class LeaderboardHelper
             {
                 new()
                 {
-                    Title = "Leaderboard",
+                    Title = context.Config.Interaction.ReputationCommands.LeaderboardEmbedTitle,
                     Description = description,
                     Footer = new()
                     {
-                        Text = $"by {user.Username}#{user.Discriminator:D4}",
+                        Text = string.Format(context.Config.Interaction.ReputationCommands.LeaderboardEmbedFooter, $"{user.Username}#{user.Discriminator:D4}"),
                         IconUrl = (user.HasAvatar ? user.GetAvatarUrl() : user.DefaultAvatarUrl).ToString(),
                     },
                     Timestamp = DateTimeOffset.UtcNow,
@@ -47,11 +47,11 @@ internal static class LeaderboardHelper
             {
                 new ActionRowProperties(new ButtonProperties[]
                 {
-                    new ActionButtonProperties($"leaderboard:{page - 1}", new EmojiProperties("⬅️"), ButtonStyle.Secondary)
+                    new ActionButtonProperties($"leaderboard:{page - 1}", new EmojiProperties(context.Config.Emojis.Left), ButtonStyle.Secondary)
                     {
                         Disabled = page == 0,
                     },
-                    new ActionButtonProperties($"leaderboard:{page + 1}", new EmojiProperties("➡️"), ButtonStyle.Secondary)
+                    new ActionButtonProperties($"leaderboard:{page + 1}", new EmojiProperties(context.Config.Emojis.Right), ButtonStyle.Secondary)
                     {
                         Disabled = !more,
                     },

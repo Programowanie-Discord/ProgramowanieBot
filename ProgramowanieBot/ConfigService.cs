@@ -43,6 +43,7 @@ public class ConfigService
         public string IHelpedMyselfButtonLabel { get; init; }
         public StealEmojiConfig StealEmoji { get; init; }
         public ReactionCommandsConfig ReactionCommands { get; init; }
+        public ReputationCommandsConfig ReputationCommands { get; init; }
 
         public class StealEmojiConfig
         {
@@ -56,6 +57,15 @@ public class ConfigService
         {
             public string ReactionsAddedResponse { get; init; }
             public string ReactionsRemovedResponse { get; init; }
+        }
+
+        public class ReputationCommandsConfig
+        {
+            public string ReputationAddedResponse { get; init; }
+            public string ReputationRemovedResponse { get; init; }
+            public string ReputationSetResponse { get; init; }
+            public string LeaderboardEmbedTitle { get; init; }
+            public string LeaderboardEmbedFooter { get; init; }
         }
     }
 
@@ -99,5 +109,7 @@ public class ConfigService
     {
         public string Success { get; init; }
         public string Error { get; init; }
+        public string Left { get; init; }
+        public string Right { get; init; }
     }
 }

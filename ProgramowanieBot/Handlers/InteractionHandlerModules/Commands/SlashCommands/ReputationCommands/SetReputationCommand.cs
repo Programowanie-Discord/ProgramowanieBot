@@ -32,7 +32,7 @@ public class SetReputationCommand : ApplicationCommandModule<ExtendedSlashComman
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
         }
-        await RespondAsync(InteractionCallback.ChannelMessageWithSource($"**{Context.Config.Emojis.Success} {reputation} of reputation was set for {user}.**"));
+        await RespondAsync(InteractionCallback.ChannelMessageWithSource($"**{Context.Config.Emojis.Success} {string.Format(Context.Config.Interaction.ReputationCommands.ReputationSetResponse, user, reputation)}**"));
     }
 
     public class NameTranslationsProvider : ITranslationsProvider
