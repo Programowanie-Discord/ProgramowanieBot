@@ -39,10 +39,10 @@ public class ConfigService
         public string ApproveButtonLabel { get; init; }
         public string AlreadyMentionedResponse { get; init; }
         public string NotOwnMessageResponse { get; init; }
-        public StealEmojiConfig StealEmoji { get; init; }
-        public ReactionCommandsConfig ReactionCommands { get; init; }
         public string SelectHelperMenuPlaceholder { get; init; }
         public string IHelpedMyselfButtonLabel { get; init; }
+        public StealEmojiConfig StealEmoji { get; init; }
+        public ReactionCommandsConfig ReactionCommands { get; init; }
 
         public class StealEmojiConfig
         {
