@@ -21,15 +21,32 @@ public class ResolveInteraction : InteractionModule<ExtendedUserMenuInteractionC
                 throw new(Context.Config.Interaction.PostAlreadyResolvedResponse);
         }
 
-        var helper = Context.SelectedValues[0];
+        var values = Context.SelectedUsers;
+
+        var helper = values[0];
+        if (helper.IsBot)
+            throw new(Context.Config.Interaction.SelectedBotAsHelperResponse);
+
+        var isHelper2 = values.Count == 2;
+        User? helper2;
+        if (isHelper2)
+        {
+            helper2 = values[1];
+            if (helper2.IsBot)
+                throw new(Context.Config.Interaction.SelectedBotAsHelperResponse);
+        }
+        else
+            helper2 = null;
+
+        var user = Context.User;
         await RespondAsync(InteractionCallback.ChannelMessageWithSource(new()
         {
-            Content = $"**{Context.Config.Emojis.Success} {string.Format(Context.Config.Interaction.WaitingForApprovalResponse, $"<@{helper}>")}**",
+            Content = $"**{Context.Config.Emojis.Success} {(isHelper2 ? string.Format(Context.Config.Interaction.WaitingForApprovalWith2HelpersResponse, helper, helper2) : string.Format(Context.Config.Interaction.WaitingForApprovalResponse, helper))}**",
             Components = new ComponentProperties[]
             {
                 new ActionRowProperties(new ButtonProperties[]
                 {
-                    new ActionButtonProperties($"approve:{helper}:{helper != Context.User.Id}", Context.Config.Interaction.ApproveButtonLabel, ButtonStyle.Success),
+                    new ActionButtonProperties($"approve:{helper.Id}:{helper != user}:{(isHelper2 ? helper2!.Id : null)}:{(isHelper2 ? helper2 != user : null)}", Context.Config.Interaction.ApproveButtonLabel, ButtonStyle.Success),
                 }),
             },
             AllowedMentions = AllowedMentionsProperties.None,

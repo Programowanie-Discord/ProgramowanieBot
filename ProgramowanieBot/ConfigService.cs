@@ -36,6 +36,7 @@ public class ConfigService
         public string SelectedBotAsHelperResponse { get; init; }
         public string NotHelpChannelResponse { get; init; }
         public string WaitingForApprovalResponse { get; init; }
+        public string WaitingForApprovalWith2HelpersResponse { get; init; }
         public string ApproveButtonLabel { get; init; }
         public string AlreadyMentionedResponse { get; init; }
         public string NotOwnMessageResponse { get; init; }

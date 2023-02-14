@@ -42,6 +42,7 @@ public class PostCloseInteraction : InteractionModule<ExtendedButtonInteractionC
                     new UserMenuProperties("resolve")
                     {
                         Placeholder = Context.Config.Interaction.SelectHelperMenuPlaceholder,
+                        MaxValues = 2,
                     },
                     new ActionRowProperties(new ButtonProperties[]
                     {

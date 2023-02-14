@@ -9,7 +9,7 @@ internal class NoBotAttribute<TContext> : ParameterPreconditionAttribute<TContex
 {
     public override ValueTask EnsureCanExecuteAsync(object? value, TContext context)
     {
-        if (((User)value!).IsBot)
+        if (value != null && ((User)value!).IsBot)
             throw new(context.Config.Interaction.SelectedBotAsHelperResponse);
 
         return default;
