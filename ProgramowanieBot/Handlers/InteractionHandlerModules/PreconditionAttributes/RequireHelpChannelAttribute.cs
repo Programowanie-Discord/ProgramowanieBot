@@ -3,7 +3,7 @@ using NetCord.Services;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules;
 
-internal class RequireHelpChannel<TContext> : PreconditionAttribute<TContext> where TContext : IChannelContext, IExtendedContext
+internal class RequireHelpChannelAttribute<TContext> : PreconditionAttribute<TContext> where TContext : IChannelContext, IExtendedContext
 {
     public override ValueTask EnsureCanExecuteAsync(TContext context)
     {

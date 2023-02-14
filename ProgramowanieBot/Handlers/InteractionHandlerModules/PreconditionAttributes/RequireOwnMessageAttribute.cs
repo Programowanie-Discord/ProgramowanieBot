@@ -3,7 +3,7 @@ using NetCord.Services.ApplicationCommands;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules;
 
-internal class RequireOwnMessage<TContext> : PreconditionAttribute<TContext> where TContext : MessageCommandContext, IExtendedContext
+internal class RequireOwnMessageAttribute<TContext> : PreconditionAttribute<TContext> where TContext : MessageCommandContext, IExtendedContext
 {
     public override ValueTask EnsureCanExecuteAsync(TContext context)
     {
