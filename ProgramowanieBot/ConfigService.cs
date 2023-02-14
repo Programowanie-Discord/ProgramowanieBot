@@ -58,6 +58,7 @@ public class ConfigService
         {
             public string ReactionsAddedResponse { get; init; }
             public string ReactionsRemovedResponse { get; init; }
+            public string HelpPostStartMessageResponse { get; init; }
         }
 
         public class ReputationCommandsConfig

@@ -9,6 +9,7 @@ public class AddReactionsCommand : ApplicationCommandModule<ExtendedMessageComma
 {
     [RequireHelpChannel<ExtendedMessageCommandContext>]
     [RequireOwnMessage<ExtendedMessageCommandContext>]
+    [RequireNotStartMessage<ExtendedMessageCommandContext>]
     [MessageCommand("Add Reactions", NameTranslationsProviderType = typeof(NameTranslationsProvider))]
     public async Task AddReactionsAsync()
     {

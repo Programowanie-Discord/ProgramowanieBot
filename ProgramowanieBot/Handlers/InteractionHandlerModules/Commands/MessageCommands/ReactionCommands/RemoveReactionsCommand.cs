@@ -9,6 +9,7 @@ public class RemoveReactionsCommand : ApplicationCommandModule<ExtendedMessageCo
 {
     [RequireHelpChannel<ExtendedMessageCommandContext>]
     [RequireOwnMessage<ExtendedMessageCommandContext>]
+    [RequireNotStartMessage<ExtendedMessageCommandContext>]
     [MessageCommand("Remove Reactions", NameTranslationsProviderType = typeof(NameTranslationsProvider))]
     public async Task RemoveReactionsAsync()
     {
