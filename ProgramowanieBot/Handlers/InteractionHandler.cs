@@ -23,6 +23,7 @@ internal class InteractionHandler : BaseHandler<ConfigService>
 
     private readonly InteractionService<ExtendedButtonInteractionContext> _buttonInteractionService;
     private readonly InteractionService<ExtendedStringMenuInteractionContext> _stringMenuInteractionService;
+    private readonly InteractionService<ExtendedUserMenuInteractionContext> _userMenuInteractionService;
     private readonly InteractionService<ExtendedModalSubmitInteractionContext> _modalSubmitInteractionService;
 
     private readonly TokenService _token;
@@ -44,6 +45,7 @@ internal class InteractionHandler : BaseHandler<ConfigService>
         });
         _buttonInteractionService = new();
         _stringMenuInteractionService = new();
+        _userMenuInteractionService = new();
         _modalSubmitInteractionService = new();
         _token = token;
     }
@@ -61,6 +63,7 @@ internal class InteractionHandler : BaseHandler<ConfigService>
 
         _buttonInteractionService.AddModules(assembly);
         _stringMenuInteractionService.AddModules(assembly);
+        _userMenuInteractionService.AddModules(assembly);
         _modalSubmitInteractionService.AddModules(assembly);
 
         Logger.LogInformation("Registering application commands");
@@ -87,6 +90,7 @@ internal class InteractionHandler : BaseHandler<ConfigService>
                 MessageCommandInteraction messageCommandInteraction => _messageCommandService.ExecuteAsync(new(messageCommandInteraction, Client, Config, Provider)),
                 ButtonInteraction buttonInteraction => _buttonInteractionService.ExecuteAsync(new(buttonInteraction, Client, Config, Provider)),
                 StringMenuInteraction stringMenuInteraction => _stringMenuInteractionService.ExecuteAsync(new(stringMenuInteraction, Client, Config, Provider)),
+                UserMenuInteraction userMenuInteraction => _userMenuInteractionService.ExecuteAsync(new(userMenuInteraction, Client, Config, Provider)),
                 ModalSubmitInteraction modalSubmitInteraction => _modalSubmitInteractionService.ExecuteAsync(new(modalSubmitInteraction, Client, Config, Provider)),
                 _ => throw new("Invalid interaction."),
             });

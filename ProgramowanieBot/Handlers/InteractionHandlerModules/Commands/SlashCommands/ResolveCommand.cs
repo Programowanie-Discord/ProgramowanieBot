@@ -18,16 +18,16 @@ public class ResolveCommand : ApplicationCommandModule<ExtendedSlashCommandConte
     [SlashCommand("resolve", "Closes your post and specifies who helped you", NameTranslationsProviderType = typeof(NameTranslationsProvider), DescriptionTranslationsProviderType = typeof(DescriptionTranslationsProvider))]
     public async Task ResolveAsync([SlashCommandParameter(NameTranslationsProviderType = typeof(HelperNameTranslationsProvider), Description = "User who helped you", DescriptionTranslationsProviderType = typeof(HelperDescriptionTranslationsProvider))][NoBot<ExtendedSlashCommandContext>] User helper)
     {
+        var channelId = Context.Interaction.ChannelId.GetValueOrDefault();
         await using (var context = Context.Provider.GetRequiredService<DataContext>())
         {
-            var channelId = Context.Interaction.ChannelId.GetValueOrDefault();
             if (await context.ResolvedPosts.AnyAsync(p => p.Id == channelId))
                 throw new(Context.Config.Interaction.PostAlreadyResolvedResponse);
         }
 
         await RespondAsync(InteractionCallback.ChannelMessageWithSource(new()
         {
-            Content = $"**{Context.Config.Emojis.Success} {Context.Config.Interaction.WaitingForApprovalResponse}**",
+            Content = $"**{Context.Config.Emojis.Success} {string.Format(Context.Config.Interaction.WaitingForApprovalResponse, helper)}**",
             Components = new ComponentProperties[]
             {
                 new ActionRowProperties(new ButtonProperties[]
@@ -35,6 +35,7 @@ public class ResolveCommand : ApplicationCommandModule<ExtendedSlashCommandConte
                     new ActionButtonProperties($"approve:{helper.Id}:{helper != Context.User}", Context.Config.Interaction.ApproveButtonLabel, ButtonStyle.Success),
                 }),
             },
+            AllowedMentions = AllowedMentionsProperties.None,
         }));
     }
 
