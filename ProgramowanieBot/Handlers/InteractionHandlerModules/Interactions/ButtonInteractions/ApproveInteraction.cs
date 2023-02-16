@@ -15,7 +15,7 @@ public class ApproveInteraction : InteractionModule<ExtendedButtonInteractionCon
 {
     [InteractionRequireUserChannelPermissions<ExtendedButtonInteractionContext>(Permissions.Administrator)]
     [Interaction("approve")]
-    public async Task ApproveAsync(ulong helper, bool giveReputation, ulong? helper2, bool? giveReputation2)
+    public async Task ApproveAsync(ulong helper, bool giveReputation, ulong? helper2 = null, bool? giveReputation2 = null)
     {
         var channelId = Context.Interaction.ChannelId.GetValueOrDefault();
         await using (var context = Context.Provider.GetRequiredService<DataContext>())

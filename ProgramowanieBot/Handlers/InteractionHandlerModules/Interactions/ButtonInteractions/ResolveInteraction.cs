@@ -28,7 +28,7 @@ public class ResolveInteraction : InteractionModule<ExtendedButtonInteractionCon
             {
                 new ActionRowProperties(new ButtonProperties[]
                 {
-                    new ActionButtonProperties($"approve:{helper}:{helper != Context.User.Id}", Context.Config.Interaction.ApproveButtonLabel, ButtonStyle.Success),
+                    new ActionButtonProperties($"approve:{helper}:{helper != Context.User.Id}::", Context.Config.Interaction.ApproveButtonLabel, ButtonStyle.Success),
                 }),
             },
             AllowedMentions = AllowedMentionsProperties.None,
