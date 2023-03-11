@@ -14,7 +14,8 @@ public class ConfigService
     {
         var options = Serialization.Options;
         options.ReadCommentHandling = JsonCommentHandling.Skip;
-        return JsonSerializer.Deserialize<ConfigService>(File.OpenRead("appsettings.json"), options)!;
+        using var stream = File.OpenRead("appsettings.json");
+        return JsonSerializer.Deserialize<ConfigService>(stream, options)!;
     }
 
     public string Token { get; init; }
