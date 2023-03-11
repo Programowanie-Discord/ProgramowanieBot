@@ -42,7 +42,17 @@ public class ApproveInteraction : InteractionModule<ExtendedButtonInteractionCon
             Components = Enumerable.Empty<ComponentProperties>(),
         }));
         var user = Context.User;
-        await Context.Client.Rest.ModifyGuildThreadAsync(channelId, t => t.Archived = true, new()
+        var channel = (GuildThread)Context.Channel!;
+        await channel.ModifyAsync(t =>
+        {
+            t.Archived = true;
+
+            const int NameMaxLength = 100;
+            var name = $"{Context.Config.Interaction.PostResolvedPrefix} {channel.Name}";
+            if (name.Length > NameMaxLength)
+                name = name[..NameMaxLength];
+            t.Name = name;
+        }, new()
         {
             AuditLogReason = $"Approved by: {user.Username}#{user.Discriminator:D4} ({user.Id})",
         });

@@ -32,6 +32,9 @@ public class ConfigService
         public string PostClosedResponse { get; init; }
         public string PostAlreadyResolvedResponse { get; init; }
         public string PostResolvedResponse { get; init; }
+        public string PostResolvedPrefix { get; init; }
+        public string SyncingPostsResponse { get; init; }
+        public string PostsSyncedResponse { get; init; }
         public string ShowProfileOnBotResponse { get; init; }
         public string SelectedBotAsHelperResponse { get; init; }
         public string NotHelpChannelResponse { get; init; }
@@ -111,6 +114,7 @@ public class ConfigService
     {
         public string Success { get; init; }
         public string Error { get; init; }
+        public string Loading { get; init; }
         public string Left { get; init; }
         public string Right { get; init; }
     }
