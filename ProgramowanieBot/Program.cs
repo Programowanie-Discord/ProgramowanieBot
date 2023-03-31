@@ -29,7 +29,7 @@ builder.ConfigureServices(services =>
 var host = builder.Build();
 await host.RunAsync();
 
-file static class ServiceCollectionExtensions
+static file class ServiceCollectionExtensions
 {
     public static IServiceCollection AddHandlers(this IServiceCollection services)
     {
