@@ -15,7 +15,8 @@ public class SyncResolvedPostNamesCommand : ApplicationCommandModule<ExtendedSla
     [SlashCommand(
         "sync-resolved-post-names",
         "Adds or changes prefix of resolved posts",
-        DefaultGuildUserPermissions = Permissions.Administrator, NameTranslationsProviderType = typeof(NameTranslationsProvider),
+        DefaultGuildUserPermissions = Permissions.Administrator,
+        NameTranslationsProviderType = typeof(NameTranslationsProvider),
         DescriptionTranslationsProviderType = typeof(DescriptionTranslationsProvider))]
     public async Task SyncResolvedPostNamesAsync(
         [SlashCommandParameter(
@@ -35,8 +36,9 @@ public class SyncResolvedPostNamesCommand : ApplicationCommandModule<ExtendedSla
         var activePosts = await Context.Client.Rest.GetActiveGuildThreadsAsync(Context.Interaction.GuildId.GetValueOrDefault());
         var posts = await postsTask;
 
-        posts.EnsureCapacity(posts.Count + activePosts.Count);
-        foreach (var post in activePosts.Values.Where(t => t.ParentId == helpChannelId))
+        var helpPosts = activePosts.Values.Where(t => t.ParentId == helpChannelId).ToArray();
+        posts.EnsureCapacity(posts.Count + helpPosts.Length);
+        foreach (var post in helpPosts)
             posts.TryAdd(post.Id, post);
 
         const int NameMaxLength = 100;
