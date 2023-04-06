@@ -9,7 +9,7 @@ namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands.MessageCo
 
 public partial class StealEmojisCommand : ApplicationCommandModule<ExtendedMessageCommandContext>
 {
-    [MessageCommand("Steal Emojis", DefaultGuildUserPermissions = Permissions.ManageEmojisAndStickers, NameTranslationsProviderType = typeof(NameTranslationsProvider))]
+    [MessageCommand("Steal Emojis", DefaultGuildUserPermissions = Permissions.ManageGuildExpressions, NameTranslationsProviderType = typeof(NameTranslationsProvider))]
     public Task StealEmojisAsync()
     {
         var matches = GetEmojiRegex().Matches(Context.Target.Content);
