@@ -27,7 +27,7 @@ public class ResolveCommand : ApplicationCommandModule<ExtendedSlashCommandConte
         var channelId = Context.Interaction.ChannelId.GetValueOrDefault();
         await using (var context = Context.Provider.GetRequiredService<DataContext>())
         {
-            if (await context.ResolvedPosts.AnyAsync(p => p.Id == channelId))
+            if (await context.Posts.AnyAsync(p => p.PostId == channelId))
                 throw new(Context.Config.Interaction.PostAlreadyResolvedResponse);
         }
 

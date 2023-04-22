@@ -2,8 +2,8 @@
 
 namespace ProgramowanieBot.Data;
 
-public class ResolvedPost
+public class Post
 {
     [Key]
-    public ulong Id { get; set; }
+    public ulong PostId { get; set; }
 }
