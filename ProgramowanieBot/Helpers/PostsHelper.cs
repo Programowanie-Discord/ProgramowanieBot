@@ -2,8 +2,6 @@
 
 using Microsoft.EntityFrameworkCore;
 
-using NetCord.Services;
-
 using ProgramowanieBot.Data;
 
 namespace ProgramowanieBot.Helpers;
