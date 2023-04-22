@@ -104,7 +104,8 @@ internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHan
         {
             await using var context = Provider.GetRequiredService<DataContext>();
             await using var transaction = await context.Database.BeginTransactionAsync(default);
-            if (!await context.Posts.AnyAsync(p => p.PostId == message.ChannelId && (p.IsResolved || p.PostResolveReminderCounter >= Config.MaxPostResolveReminders)))
+            var maxPostResolveReminders = Config.MaxPostResolveReminders;
+            if (!await context.Posts.AnyAsync(p => p.PostId == message.ChannelId && (p.IsResolved || p.PostResolveReminderCounter >= maxPostResolveReminders)))
             {
                 await message.ReplyAsync(Config.PostResolveReminderMessage);
                 await PostsHelper.IncrementPostResolveReminderCounterAsync(context, message.ChannelId);
