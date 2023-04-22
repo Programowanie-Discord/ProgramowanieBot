@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using ProgramowanieBot.Data;
 
 namespace ProgramowanieBot.Helpers;
-internal class PostsHelper
+
+internal static class PostsHelper
 {
     public static async Task ResolvePostAsync(DataContext context, ulong postId)
     {
@@ -34,7 +35,7 @@ internal class PostsHelper
         var post = await context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
         if (post != null)
         {
-            post.PostResolveReminderCounter += 1;
+            post.PostResolveReminderCounter++;
         }
         else
         {

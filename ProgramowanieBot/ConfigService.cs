@@ -81,7 +81,7 @@ public class ConfigService
         public IReadOnlyDictionary<ulong, ulong> HelpTagsRoles { get; init; }
         public double MaxPostResolveReminders { get; init; }
         public double ReactionTypingTimeoutSeconds { get; init; }
-        public string[] PostResolveReminderKeywords { get; init; }
+        public IReadOnlyList<string> PostResolveReminderKeywords { get; init; }
         public string PostResolveReminderMessage { get; init; }
         public string HelpPostStartMessage { get; init; }
         public string MentionMenuPlaceholder { get; init; }

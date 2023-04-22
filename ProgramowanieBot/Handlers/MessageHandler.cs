@@ -56,7 +56,7 @@ internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHan
             if (message.Author.Id == thread.OwnerId)
                 foreach (string keyword in _resolveKeywords)
                 {
-                    if (message.Content.ToLower().Contains(keyword))
+                    if (message.Content.Contains(keyword, StringComparison.InvariantCultureIgnoreCase))
                     {
                         await SendReminderMessageAsync();
                         break;
@@ -110,7 +110,7 @@ internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHan
         {
             await using var context = Provider.GetRequiredService<DataContext>();
             await using var transaction = await context.Database.BeginTransactionAsync(default);
-            if (!await context.Posts.AnyAsync(p => p.PostId == message.ChannelId && (p.PostResolveReminderCounter >= _maxReminders ||p.IsResolved)))
+            if (!await context.Posts.AnyAsync(p => p.PostId == message.ChannelId && (p.IsResolved || p.PostResolveReminderCounter >= _maxReminders)))
             {
                 await message.ReplyAsync(_reminderMessage);
                 await PostsHelper.IncrementPostResolveReminderCounterAsync(context, message.ChannelId);
