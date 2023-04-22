@@ -48,6 +48,7 @@ public class SyncResolvedPostNamesCommand : ApplicationCommandModule<ExtendedSla
         {
             await foreach (var post in context.Posts)
             {
+                if (!post.IsResolved) continue;
                 if (posts.TryGetValue(post.PostId, out var thread) && changeName(thread, out var name))
                 {
                     await thread.ModifyAsync(t =>

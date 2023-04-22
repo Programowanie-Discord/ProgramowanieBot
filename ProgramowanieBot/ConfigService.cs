@@ -79,7 +79,10 @@ public class ConfigService
     {
         public ulong HelpChannelId { get; init; }
         public IReadOnlyDictionary<ulong, ulong> HelpTagsRoles { get; init; }
+        public double MaxPostResolveReminders { get; init; }
         public double ReactionTypingTimeoutSeconds { get; init; }
+        public string[] PostResolveReminderKeywords { get; init; }
+        public string PostResolveReminderMessage { get; init; }
         public string HelpPostStartMessage { get; init; }
         public string MentionMenuPlaceholder { get; init; }
         public string PostCloseButtonLabel { get; init; }
@@ -95,13 +98,15 @@ public class ConfigService
 
         public string CreateConnectionString()
         {
-            NpgsqlConnectionStringBuilder builder = new();
-            builder.Host = Host;
-            builder.Database = Database;
+            NpgsqlConnectionStringBuilder builder = new()
+            {
+                Host = Host,
+                Database = Database,
+                Username = Username,
+                Password = Password
+            };
             if (Port.HasValue)
                 builder.Port = Port.GetValueOrDefault();
-            builder.Username = Username;
-            builder.Password = Password;
             return builder.ToString();
         }
     }

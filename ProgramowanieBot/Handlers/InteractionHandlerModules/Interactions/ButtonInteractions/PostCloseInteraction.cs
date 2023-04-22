@@ -18,7 +18,7 @@ public class PostCloseInteraction : InteractionModule<ExtendedButtonInteractionC
         bool resolved;
         var channelId = Context.Interaction.ChannelId.GetValueOrDefault();
         await using (var context = Context.Provider.GetRequiredService<DataContext>())
-            resolved = await context.Posts.AnyAsync(p => p.PostId == channelId);
+            resolved = await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved);
 
         if (resolved)
         {

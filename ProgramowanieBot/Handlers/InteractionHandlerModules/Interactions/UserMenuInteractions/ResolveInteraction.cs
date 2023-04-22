@@ -17,7 +17,7 @@ public class ResolveInteraction : InteractionModule<ExtendedUserMenuInteractionC
         var channelId = Context.Interaction.ChannelId.GetValueOrDefault();
         await using (var context = Context.Provider.GetRequiredService<DataContext>())
         {
-            if (await context.Posts.AnyAsync(p => p.PostId == channelId))
+            if (await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved))
                 throw new(Context.Config.Interaction.PostAlreadyResolvedResponse);
         }
 
