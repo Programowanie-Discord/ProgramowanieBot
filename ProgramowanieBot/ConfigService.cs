@@ -10,6 +10,13 @@ namespace ProgramowanieBot;
 
 public class ConfigService
 {
+    public static ConfigService Create()
+    {
+        JsonSerializerOptions options = Serialization.Options;
+        options.ReadCommentHandling = JsonCommentHandling.Skip;
+        using FileStream stream = File.OpenRead("appsettings.json");
+        return JsonSerializer.Deserialize<ConfigService>(stream, options)!;
+    }
     public DailyReputationHandlerConfig DailyReputationReactions { get; init; }
 
     public DatabaseConfig Database { get; init; }
@@ -24,17 +31,11 @@ public class ConfigService
 
     public string Token { get; init; }
 
-    public static ConfigService Create()
-    {
-        JsonSerializerOptions options = Serialization.Options;
-        options.ReadCommentHandling = JsonCommentHandling.Skip;
-        using FileStream stream = File.OpenRead("appsettings.json");
-        return JsonSerializer.Deserialize<ConfigService>(stream, options)!;
-    }
     public class DailyReputationHandlerConfig
     {
         public ulong ChannelId { get; init; }
     }
+
     public class DatabaseConfig
     {
         public string Database { get; init; }
