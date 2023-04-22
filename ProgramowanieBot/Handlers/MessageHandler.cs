@@ -12,16 +12,10 @@ namespace ProgramowanieBot.Handlers;
 
 internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHandlerConfig>
 {
-    private readonly string[] _resolveKeywords;
-    private readonly double _maxReminders;
-    private readonly string _reminderMessage;
     private readonly TimeSpan _typingTimeout;
 
     public MessageHandler(GatewayClient client, ILogger<MessageHandler> logger, ConfigService config, IServiceProvider provider) : base(client, logger, config.GuildThread, provider)
     {
-        _resolveKeywords = config.GuildThread.PostResolveReminderKeywords;
-        _maxReminders = config.GuildThread.MaxPostResolveReminders;
-        _reminderMessage = config.GuildThread.PostResolveReminderMessage;
         _typingTimeout = TimeSpan.FromSeconds(config.GuildThread.ReactionTypingTimeoutSeconds);
     }
 
@@ -54,7 +48,7 @@ internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHan
         else
         {
             if (message.Author.Id == thread.OwnerId)
-                foreach (string keyword in _resolveKeywords)
+                foreach (string keyword in Config.PostResolveReminderKeywords)
                 {
                     if (message.Content.Contains(keyword, StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -110,9 +104,9 @@ internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHan
         {
             await using var context = Provider.GetRequiredService<DataContext>();
             await using var transaction = await context.Database.BeginTransactionAsync(default);
-            if (!await context.Posts.AnyAsync(p => p.PostId == message.ChannelId && (p.IsResolved || p.PostResolveReminderCounter >= _maxReminders)))
+            if (!await context.Posts.AnyAsync(p => p.PostId == message.ChannelId && (p.IsResolved || p.PostResolveReminderCounter >= Config.MaxPostResolveReminders)))
             {
-                await message.ReplyAsync(_reminderMessage);
+                await message.ReplyAsync(Config.PostResolveReminderMessage);
                 await PostsHelper.IncrementPostResolveReminderCounterAsync(context, message.ChannelId);
             }
             await context.SaveChangesAsync();
