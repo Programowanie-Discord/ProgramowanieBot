@@ -13,19 +13,15 @@ internal static class PostsHelper
         Debug.Assert(context.Database.CurrentTransaction != null, "Transaction is required.");
 
         var post = await context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
-        if (post != null)
-        {
-            post.IsResolved = true;
-        }
-        else
-        {
+        if (post == null)
             await context.Posts.AddAsync(new()
             {
                 PostId = postId,
                 PostResolveReminderCounter = 0,
-                IsResolved = true
+                IsResolved = true,
             });
-        }
+        else
+            post.IsResolved = true;
     }
 
     public static async Task IncrementPostResolveReminderCounterAsync(DataContext context, ulong postId)
@@ -33,18 +29,14 @@ internal static class PostsHelper
         Debug.Assert(context.Database.CurrentTransaction != null, "Transaction is required.");
 
         var post = await context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
-        if (post != null)
-        {
-            post.PostResolveReminderCounter++;
-        }
-        else
-        {
+        if (post == null)
             await context.Posts.AddAsync(new()
             {
                 PostId = postId,
                 PostResolveReminderCounter = 1,
-                IsResolved = false
+                IsResolved = false,
             });
-        }
+        else
+            post.PostResolveReminderCounter++;
     }
 }

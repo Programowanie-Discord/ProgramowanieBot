@@ -12,23 +12,18 @@ public class ConfigService
 {
     public static ConfigService Create()
     {
-        JsonSerializerOptions options = Serialization.Options;
+        var options = Serialization.Options;
         options.ReadCommentHandling = JsonCommentHandling.Skip;
-        using FileStream stream = File.OpenRead("appsettings.json");
+        using var stream = File.OpenRead("appsettings.json");
         return JsonSerializer.Deserialize<ConfigService>(stream, options)!;
     }
+
     public DailyReputationHandlerConfig DailyReputationReactions { get; init; }
-
     public DatabaseConfig Database { get; init; }
-
     public Color EmbedColor { get; init; }
-
     public EmojisConfig Emojis { get; init; }
-
     public GuildThreadHandlerConfig GuildThread { get; init; }
-
     public InteractionHandlerConfig Interaction { get; init; }
-
     public string Token { get; init; }
 
     public class DailyReputationHandlerConfig
@@ -55,9 +50,11 @@ public class ConfigService
             };
             if (Port.HasValue)
                 builder.Port = Port.GetValueOrDefault();
+
             return builder.ToString();
         }
     }
+
     public class EmojisConfig
     {
         public string Error { get; init; }
@@ -66,8 +63,8 @@ public class ConfigService
         public string Right { get; init; }
         public string Success { get; init; }
     }
-    public class GuildThreadHandlerConfig
 
+    public class GuildThreadHandlerConfig
     {
         public ulong HelpChannelId { get; init; }
         public string HelpPostStartMessage { get; init; }
@@ -79,6 +76,7 @@ public class ConfigService
         public string PostResolveReminderMessage { get; init; }
         public double ReactionTypingTimeoutSeconds { get; init; }
     }
+
     public class InteractionHandlerConfig
     {
         public string AlreadyMentionedResponse { get; init; }
@@ -94,21 +92,13 @@ public class ConfigService
         public string PostResolvedResponse { get; init; }
         public string PostsSyncedResponse { get; init; }
         public ReactionCommandsConfig ReactionCommands { get; init; }
-
         public ReputationCommandsConfig ReputationCommands { get; init; }
-
         public string SelectedBotAsHelperResponse { get; init; }
-
         public string SelectHelperMenuPlaceholder { get; init; }
-
         public string ShowProfileOnBotResponse { get; init; }
-
         public StealEmojiConfig StealEmoji { get; init; }
-
         public string SyncingPostsResponse { get; init; }
-
         public string WaitingForApprovalResponse { get; init; }
-
         public string WaitingForApprovalWith2HelpersResponse { get; init; }
 
         public class ReactionCommandsConfig
@@ -117,6 +107,7 @@ public class ConfigService
             public string ReactionsAddedResponse { get; init; }
             public string ReactionsRemovedResponse { get; init; }
         }
+
         public class ReputationCommandsConfig
         {
             public string LeaderboardEmbedFooter { get; init; }
@@ -125,6 +116,7 @@ public class ConfigService
             public string ReputationRemovedResponse { get; init; }
             public string ReputationSetResponse { get; init; }
         }
+
         public class StealEmojiConfig
         {
             public string AddEmojiModalNameInputLabel { get; init; }

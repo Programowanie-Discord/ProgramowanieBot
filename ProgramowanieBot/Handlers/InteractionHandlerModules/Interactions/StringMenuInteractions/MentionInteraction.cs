@@ -22,6 +22,6 @@ public class MentionInteraction : InteractionModule<ExtendedStringMenuInteractio
                 }),
             },
         }));
-        await ThreadHelper.MentionRoleAsync(Context.Client.Rest, Context.Interaction.ChannelId.GetValueOrDefault(), ulong.Parse(Context.SelectedValues[0]), Context.Guild!);
+        await ThreadHelper.MentionRoleAsync(Context.Client.Rest, Context.Interaction.Channel.Id, ulong.Parse(Context.SelectedValues[0]), Context.Guild!);
     }
 }

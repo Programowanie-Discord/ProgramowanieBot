@@ -17,7 +17,7 @@ public class ApproveInteraction : InteractionModule<ExtendedButtonInteractionCon
     [Interaction("approve")]
     public async Task ApproveAsync(ulong helper, bool giveReputation, ulong? helper2 = null, bool? giveReputation2 = null)
     {
-        var channelId = Context.Interaction.ChannelId.GetValueOrDefault();
+        var channelId = Context.Interaction.Channel.Id;
         await using (var context = Context.Provider.GetRequiredService<DataContext>())
         {
             await using var transaction = await context.Database.BeginTransactionAsync();

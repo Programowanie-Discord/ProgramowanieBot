@@ -14,9 +14,8 @@ public class RemoveReactionsCommand : ApplicationCommandModule<ExtendedMessageCo
     public async Task RemoveReactionsAsync()
     {
         var message = Context.Target;
-        var botId = Context.Client.User!.Id;
-        var task = message.DeleteReactionAsync("⬆️", botId);
-        await message.DeleteReactionAsync("⬇️", botId);
+        var task = message.DeleteReactionAsync("⬆️");
+        await message.DeleteReactionAsync("⬇️");
         await task;
         await RespondAsync(InteractionCallback.ChannelMessageWithSource(new()
         {

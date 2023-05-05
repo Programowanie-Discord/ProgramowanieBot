@@ -11,15 +11,15 @@ using ProgramowanieBot.Data;
 namespace ProgramowanieBot.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230422131709_AddPostResolveReminderCounter")]
-    partial class AddPostResolveReminderCounter
+    [Migration("20230505131249_ChangeIsResolvedDefaultValueToFalse")]
+    partial class ChangeIsResolvedDefaultValueToFalse
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("ProductVersion", "7.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -50,8 +50,8 @@ namespace ProgramowanieBot.Migrations
                     b.Property<bool>("IsResolved")
                         .HasColumnType("boolean");
 
-                    b.Property<short>("PostResolveReminderCounter")
-                        .HasColumnType("smallint");
+                    b.Property<int>("PostResolveReminderCounter")
+                        .HasColumnType("integer");
 
                     b.HasKey("PostId");
 
