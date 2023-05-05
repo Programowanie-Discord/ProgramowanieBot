@@ -17,17 +17,14 @@ public class ApproveInteraction : InteractionModule<ExtendedButtonInteractionCon
     [Interaction("approve")]
     public async Task ApproveAsync(ulong helper, bool giveReputation, ulong? helper2 = null, bool? giveReputation2 = null)
     {
-        var channelId = Context.Interaction.ChannelId.GetValueOrDefault();
+        var channelId = Context.Interaction.Channel.Id;
         await using (var context = Context.Provider.GetRequiredService<DataContext>())
         {
             await using var transaction = await context.Database.BeginTransactionAsync();
-            if (await context.ResolvedPosts.AnyAsync(p => p.Id == channelId))
+            if (await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved))
                 throw new(Context.Config.Interaction.PostAlreadyResolvedResponse);
 
-            await context.ResolvedPosts.AddAsync(new()
-            {
-                Id = channelId,
-            });
+            await PostsHelper.ResolvePostAsync(context, channelId);
             if (giveReputation)
                 await ReputationHelper.AddReputationAsync(context, helper, 5);
             if (giveReputation2 == true)

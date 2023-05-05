@@ -28,7 +28,7 @@ internal class GuildThreadCreateHandler : BaseHandler<ConfigService.GuildThreadH
 
     private async ValueTask HandleGuildThreadCreateAsync(GuildThreadCreateEventArgs args)
     {
-        if (args.NewlyCreated && args.Thread is PublicGuildThread thread && thread.ParentId == Config.HelpChannelId && Client.Guilds.TryGetValue(thread.GuildId, out var guild))
+        if (args.NewlyCreated && args.Thread is PublicGuildThread thread && thread.ParentId == Config.HelpChannelId && Client.Cache.Guilds.TryGetValue(thread.GuildId, out var guild))
         {
             var appliedTags = thread.AppliedTags;
             if (appliedTags != null)

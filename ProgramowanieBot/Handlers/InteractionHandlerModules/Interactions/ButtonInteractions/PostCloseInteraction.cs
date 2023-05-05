@@ -16,9 +16,9 @@ public class PostCloseInteraction : InteractionModule<ExtendedButtonInteractionC
     public async Task CloseAsync([AllowedUser<ExtendedButtonInteractionContext>] ulong threadOwnerId)
     {
         bool resolved;
-        var channelId = Context.Interaction.ChannelId.GetValueOrDefault();
+        var channelId = Context.Interaction.Channel.Id;
         await using (var context = Context.Provider.GetRequiredService<DataContext>())
-            resolved = await context.ResolvedPosts.AnyAsync(p => p.Id == channelId);
+            resolved = await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved);
 
         if (resolved)
         {

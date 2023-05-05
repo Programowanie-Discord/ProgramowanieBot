@@ -1,7 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using NetCord;
 using NetCord.Gateway;
+
+using ProgramowanieBot.Data;
+using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers;
 
@@ -28,41 +33,49 @@ internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHan
 
     private ValueTask HandleMessageCreateAsync(Message message)
     {
-        if (message.Author.IsBot)
-            return default;
-
-        return HandleMessageInHelpChannelAsync(message);
+        if (!message.Author.IsBot && message.Channel is PublicGuildThread thread && thread.ParentId == Config.HelpChannelId)
+            return new(HandleMessageInHelpChannelAsync(message, thread));
+        return default;
     }
 
-    private ValueTask HandleMessageInHelpChannelAsync(Message message)
+    private Task HandleMessageInHelpChannelAsync(Message message, PublicGuildThread thread)
     {
-        if (message.Channel is PublicGuildThread thread && thread.ParentId == Config.HelpChannelId)
+        if (message.Id == thread.Id)
+            return AddReactionsAsync();
+        else
         {
-            if (message.Id == thread.Id)
-                return new(AddReactionsAsync());
-            else
+            return Task.WhenAll(HandleMessageReactionsAsync(), HandleReminderAsync());
+
+            Task HandleMessageReactionsAsync()
             {
                 TaskCompletionSource taskCompletionSource = new();
-                Client.TypingStart += HandleTypingStartOnceAsync;
-                Client.MessageCreate += HandleMessageCreateOnceAsync;
-                return new(taskCompletionSource.Task.WaitAsync(_typingTimeout).ContinueWith(task =>
+
+                Func<TypingStartEventArgs, ValueTask> handleTypingStartOnceAsync = null!;
+                Func<Message, ValueTask> handleMessageCreateOnceAsync = null!;
+                handleTypingStartOnceAsync = HandleTypingStartOnceAsync;
+                handleMessageCreateOnceAsync = HandleMessageCreateOnceAsync;
+
+                Client.TypingStart += handleTypingStartOnceAsync;
+                Client.MessageCreate += handleMessageCreateOnceAsync;
+
+                return taskCompletionSource.Task.WaitAsync(_typingTimeout).ContinueWith(task =>
                 {
                     if (task.IsFaulted)
                     {
-                        Client.TypingStart -= HandleTypingStartOnceAsync;
-                        Client.MessageCreate -= HandleMessageCreateOnceAsync;
+                        Client.TypingStart -= handleTypingStartOnceAsync;
+                        Client.MessageCreate -= handleMessageCreateOnceAsync;
                         return AddReactionsAsync();
                     }
                     return Task.CompletedTask;
-                }));
+                });
 
                 ValueTask HandleTypingStartOnceAsync(TypingStartEventArgs args)
                 {
                     if (args.UserId != message.Author.Id || args.ChannelId != message.ChannelId)
                         return default;
 
-                    Client.TypingStart -= HandleTypingStartOnceAsync;
-                    Client.MessageCreate -= HandleMessageCreateOnceAsync;
+                    Client.TypingStart -= handleTypingStartOnceAsync;
+                    Client.MessageCreate -= handleMessageCreateOnceAsync;
                     taskCompletionSource.TrySetResult();
                     return default;
                 }
@@ -72,19 +85,52 @@ internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHan
                     if (newMessage.Author.Id != message.Author.Id || newMessage.ChannelId != message.ChannelId)
                         return default;
 
-                    Client.TypingStart -= HandleTypingStartOnceAsync;
-                    Client.MessageCreate -= HandleMessageCreateOnceAsync;
+                    Client.TypingStart -= handleTypingStartOnceAsync;
+                    Client.MessageCreate -= handleMessageCreateOnceAsync;
                     taskCompletionSource.TrySetResult();
                     return default;
                 }
             }
 
-            async Task AddReactionsAsync()
+            Task HandleReminderAsync()
             {
-                await message.AddReactionAsync("⬆️");
-                await message.AddReactionAsync("⬇️");
+                if (message.Author.Id != thread.OwnerId)
+                    return Task.CompletedTask;
+
+                var content = message.Content;
+                if (Config.PostResolveReminderKeywords.Any(k => content.Contains(k, StringComparison.InvariantCultureIgnoreCase)))
+                    return SendReminderMessageAsync();
+
+                return Task.CompletedTask;
+
+                async Task SendReminderMessageAsync()
+                {
+                    bool reply;
+                    await using (var context = Provider.GetRequiredService<DataContext>())
+                    {
+                        await using var transaction = await context.Database.BeginTransactionAsync();
+                        var maxPostResolveReminders = Config.MaxPostResolveReminders;
+                        if (!await context.Posts.AnyAsync(p => p.PostId == message.ChannelId && (p.IsResolved || p.PostResolveReminderCounter >= maxPostResolveReminders)))
+                        {
+                            await PostsHelper.IncrementPostResolveReminderCounterAsync(context, message.ChannelId);
+                            await context.SaveChangesAsync();
+                            await transaction.CommitAsync();
+                            reply = true;
+                        }
+                        else
+                            reply = false;
+                    }
+
+                    if (reply)
+                        await message.ReplyAsync(Config.PostResolveReminderMessage);
+                }
             }
         }
-        return default;
+
+        async Task AddReactionsAsync()
+        {
+            await message.AddReactionAsync("⬆️");
+            await message.AddReactionAsync("⬇️");
+        }
     }
 }

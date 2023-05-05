@@ -14,7 +14,7 @@ public class MentionInteraction : InteractionModule<ExtendedButtonInteractionCon
     [Interaction("mention")]
     public async Task MentionAsync([AllowedUser<ExtendedButtonInteractionContext>] ulong threadOwnerId, ulong roleId)
     {
-        var channelId = Context.Interaction.ChannelId.GetValueOrDefault();
+        var channelId = Context.Interaction.Channel.Id;
         lock (_mentionedThreadIds)
         {
             if (_mentionedThreadIds.Contains(channelId))

@@ -40,7 +40,7 @@ internal class ReactionHandler : BaseHandler<ConfigService.GuildThreadHandlerCon
     {
         var channelId = arg.ChannelId;
         var userId = arg.UserId;
-        if (userId == Client.User!.Id || !arg.Emoji.IsStandard || !IsHelpChannel(arg.GuildId.GetValueOrDefault(), channelId, out var thread) || userId == thread.OwnerId)
+        if (userId == Client.Cache.User!.Id || !arg.Emoji.IsStandard || !IsHelpChannel(arg.GuildId.GetValueOrDefault(), channelId, out var thread) || userId == thread.OwnerId)
             return;
 
         var author = await GetAuthorAsync(channelId, arg.MessageId);
@@ -75,7 +75,7 @@ internal class ReactionHandler : BaseHandler<ConfigService.GuildThreadHandlerCon
     {
         var channelId = arg.ChannelId;
         var userId = arg.UserId;
-        if (userId == Client.User!.Id || !arg.Emoji.IsStandard || !IsHelpChannel(arg.GuildId.GetValueOrDefault(), channelId, out var thread) || userId == thread.OwnerId)
+        if (userId == Client.Cache.User!.Id || !arg.Emoji.IsStandard || !IsHelpChannel(arg.GuildId.GetValueOrDefault(), channelId, out var thread) || userId == thread.OwnerId)
             return;
 
         var author = await GetAuthorAsync(channelId, arg.MessageId);
@@ -108,7 +108,7 @@ internal class ReactionHandler : BaseHandler<ConfigService.GuildThreadHandlerCon
 
     private bool IsHelpChannel(ulong guildId, ulong channelId, [NotNullWhen(true)][MaybeNullWhen(false)] out GuildThread? thread)
     {
-        if (Client.Guilds.TryGetValue(guildId, out var guild))
+        if (Client.Cache.Guilds.TryGetValue(guildId, out var guild))
         {
             if (guild.ActiveThreads.TryGetValue(channelId, out thread))
                 return thread.ParentId == Config.HelpChannelId;
