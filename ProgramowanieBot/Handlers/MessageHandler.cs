@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 
 using NetCord;
 using NetCord.Gateway;
+using NetCord.Rest;
 
 using ProgramowanieBot.Data;
 using ProgramowanieBot.Helpers;
@@ -122,7 +123,20 @@ internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHan
                     }
 
                     if (reply)
-                        await message.ReplyAsync(Config.PostResolveReminderMessage);
+                    {
+                        await thread.SendMessageAsync(new()
+                        {
+                            Content = Config.PostResolveReminderMessage,
+                            Components = new ActionRowProperties[]
+                            {
+                                new(new ButtonProperties[]
+                                {
+                                    new ActionButtonProperties($"close:{thread.OwnerId}", Config.PostCloseButtonLabel, ButtonStyle.Danger),
+                                }),
+                            },
+                            MessageReference = new(message.Id),
+                        });
+                    }
                 }
             }
         }
