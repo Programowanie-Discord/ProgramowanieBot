@@ -69,7 +69,7 @@ public class ConfigService
         public ulong HelpChannelId { get; init; }
         public string HelpPostStartMessage { get; init; }
         public IReadOnlyDictionary<ulong, ulong> HelpTagsRoles { get; init; }
-        public double MaxPostResolveReminders { get; init; }
+        public int MaxPostResolveReminders { get; init; }
         public string MentionMenuPlaceholder { get; init; }
         public string PostCloseButtonLabel { get; init; }
         public IReadOnlyList<string> PostResolveReminderKeywords { get; init; }
