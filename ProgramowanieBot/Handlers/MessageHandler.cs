@@ -121,7 +121,7 @@ internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHan
 
                     if (reply)
                     {
-                        MessageProperties messageProperties = new()
+                        await thread.SendMessageAsync(new()
                         {
                             Content = Config.PostResolveReminderMessage,
                             Components = new ActionRowProperties[]
@@ -132,8 +132,7 @@ internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHan
                                 }),
                             },
                             MessageReference = new(message.Id),
-                        };
-                        await thread.SendMessageAsync(messageProperties);
+                        });
                     }
                 }
             }
