@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 
 using NetCord;
 using NetCord.Gateway;
+using NetCord.Rest;
 
 using ProgramowanieBot.Data;
 using ProgramowanieBot.Helpers;
@@ -98,10 +99,7 @@ internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHan
                     return Task.CompletedTask;
 
                 var content = message.Content;
-                if (Config.PostResolveReminderKeywords.Any(k => content.Contains(k, StringComparison.InvariantCultureIgnoreCase)))
-                    return SendReminderMessageAsync();
-
-                return Task.CompletedTask;
+                return Config.PostResolveReminderKeywords.Any(k => content.Contains(k, StringComparison.InvariantCultureIgnoreCase)) ? SendReminderMessageAsync() : Task.CompletedTask;
 
                 async Task SendReminderMessageAsync()
                 {
@@ -122,7 +120,21 @@ internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHan
                     }
 
                     if (reply)
-                        await message.ReplyAsync(Config.PostResolveReminderMessage);
+                    {
+                        MessageProperties messageProperties = new()
+                        {
+                            Content = Config.PostResolveReminderMessage,
+                            Components = new ActionRowProperties[]
+                            {
+                                new(new ButtonProperties[]
+                                {
+                                    new ActionButtonProperties($"close:{thread.OwnerId}", Config.PostCloseButtonLabel, ButtonStyle.Danger),
+                                }),
+                            },
+                            MessageReference = new(message.Id),
+                        };
+                        await thread.SendMessageAsync(messageProperties);
+                    }
                 }
             }
         }
