@@ -99,7 +99,7 @@ internal partial class MessageHandler : BaseHandler<ConfigService.GuildThreadHan
                     return Task.CompletedTask;
 
                 var content = message.Content;
-               if (Config.PostResolveReminderKeywords.Any(k => content.Contains(k, StringComparison.InvariantCultureIgnoreCase)))
+                if (Config.PostResolveReminderKeywords.Any(k => content.Contains(k, StringComparison.InvariantCultureIgnoreCase)))
                     return SendReminderMessageAsync();
 
                 return Task.CompletedTask;
