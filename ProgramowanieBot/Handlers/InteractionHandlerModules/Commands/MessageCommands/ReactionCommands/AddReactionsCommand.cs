@@ -5,11 +5,18 @@ using NetCord.Services.ApplicationCommands;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands.MessageCommands.ReactionCommands;
 
-public class AddReactionsCommand : ApplicationCommandModule<ExtendedMessageCommandContext>
+public class AddReactionsCommand : ApplicationCommandModule<MessageCommandContext>
 {
-    [RequireHelpChannel<ExtendedMessageCommandContext>]
-    [RequireOwnMessage<ExtendedMessageCommandContext>]
-    [RequireNotStartMessage<ExtendedMessageCommandContext>]
+    private readonly ConfigService _config;
+
+    public AddReactionsCommand(ConfigService config)
+    {
+        _config = config;
+    }
+
+    [RequireHelpChannel<MessageCommandContext>]
+    [RequireOwnMessage<MessageCommandContext>]
+    [RequireNotStartMessage<MessageCommandContext>]
     [MessageCommand("Add Reactions", NameTranslationsProviderType = typeof(NameTranslationsProvider))]
     public async Task AddReactionsAsync()
     {
@@ -18,7 +25,7 @@ public class AddReactionsCommand : ApplicationCommandModule<ExtendedMessageComma
         await message.AddReactionAsync("⬇️");
         await RespondAsync(InteractionCallback.ChannelMessageWithSource(new()
         {
-            Content = $"**{Context.Config.Emojis.Success} {Context.Config.Interaction.ReactionCommands.ReactionsAddedResponse}**",
+            Content = $"**{_config.Emojis.Success} {_config.Interaction.ReactionCommands.ReactionsAddedResponse}**",
             Flags = MessageFlags.Ephemeral,
         }));
     }

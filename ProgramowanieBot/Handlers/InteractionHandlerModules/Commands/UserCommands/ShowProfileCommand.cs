@@ -11,15 +11,24 @@ using ProgramowanieBot.Data;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands.UserCommands;
 
-public class ShowProfileCommand : ApplicationCommandModule<ExtendedUserCommandContext>
+public class ShowProfileCommand : ApplicationCommandModule<UserCommandContext>
 {
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ConfigService _config;
+
+    public ShowProfileCommand(IServiceProvider serviceProvider, ConfigService config)
+    {
+        _serviceProvider = serviceProvider;
+        _config = config;
+    }
+
     [UserCommand("Show Profile", NameTranslationsProviderType = typeof(NameTranslationsProvider))]
     public async Task ShowProfileAsync()
     {
-        await using var context = Context.Provider.GetRequiredService<DataContext>();
+        await using var context = _serviceProvider.GetRequiredService<DataContext>();
         var target = Context.Target;
         if (target.IsBot)
-            throw new(Context.Config.Interaction.ShowProfileOnBotResponse);
+            throw new(_config.Interaction.ShowProfileOnBotResponse);
 
         var user = Context.User;
         var profile = await context.Profiles.FirstOrDefaultAsync(u => u.UserId == target.Id);
@@ -48,7 +57,7 @@ public class ShowProfileCommand : ApplicationCommandModule<ExtendedUserCommandCo
                         IconUrl = user.HasAvatar ? user.GetAvatarUrl().ToString() : user.DefaultAvatarUrl.ToString(),
                         Text = $"{user.Username}#{user.Discriminator:D4}",
                     },
-                    Color = Context.Config.EmbedColor,
+                    Color = _config.EmbedColor,
                 }
             },
             Flags = MessageFlags.Ephemeral,

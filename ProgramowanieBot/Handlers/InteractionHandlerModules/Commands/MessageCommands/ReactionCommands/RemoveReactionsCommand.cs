@@ -5,11 +5,18 @@ using NetCord.Services.ApplicationCommands;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands.MessageCommands.ReactionCommands;
 
-public class RemoveReactionsCommand : ApplicationCommandModule<ExtendedMessageCommandContext>
+public class RemoveReactionsCommand : ApplicationCommandModule<MessageCommandContext>
 {
-    [RequireHelpChannel<ExtendedMessageCommandContext>]
-    [RequireOwnMessage<ExtendedMessageCommandContext>]
-    [RequireNotStartMessage<ExtendedMessageCommandContext>]
+    private readonly ConfigService _config;
+
+    public RemoveReactionsCommand(ConfigService config)
+    {
+        _config = config;
+    }
+
+    [RequireHelpChannel<MessageCommandContext>]
+    [RequireOwnMessage<MessageCommandContext>]
+    [RequireNotStartMessage<MessageCommandContext>]
     [MessageCommand("Remove Reactions", NameTranslationsProviderType = typeof(NameTranslationsProvider))]
     public async Task RemoveReactionsAsync()
     {
@@ -19,7 +26,7 @@ public class RemoveReactionsCommand : ApplicationCommandModule<ExtendedMessageCo
         await task;
         await RespondAsync(InteractionCallback.ChannelMessageWithSource(new()
         {
-            Content = $"**{Context.Config.Emojis.Success} {Context.Config.Interaction.ReactionCommands.ReactionsRemovedResponse}**",
+            Content = $"**{_config.Emojis.Success} {_config.Interaction.ReactionCommands.ReactionsRemovedResponse}**",
             Flags = MessageFlags.Ephemeral,
         }));
     }

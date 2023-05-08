@@ -10,8 +10,17 @@ using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands.SlashCommands.ReputationCommands;
 
-public class SetReputationCommand : ApplicationCommandModule<ExtendedSlashCommandContext>
+public class SetReputationCommand : ApplicationCommandModule<SlashCommandContext>
 {
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ConfigService _config;
+
+    public SetReputationCommand(IServiceProvider serviceProvider, ConfigService config)
+    {
+        _serviceProvider = serviceProvider;
+        _config = config;
+    }
+
     [SlashCommand("set-reputation", "Sets user reputation",
         NameTranslationsProviderType = typeof(NameTranslationsProvider),
         DescriptionTranslationsProviderType = typeof(DescriptionTranslationsProvider),
@@ -25,14 +34,14 @@ public class SetReputationCommand : ApplicationCommandModule<ExtendedSlashComman
             NameTranslationsProviderType = typeof(ReputationNameTranslationsProvider),
             DescriptionTranslationsProviderType = typeof(ReputationDescriptionTranslationsProvider))] long reputation)
     {
-        await using (var context = Context.Provider.GetRequiredService<DataContext>())
+        await using (var context = _serviceProvider.GetRequiredService<DataContext>())
         {
             await using var transaction = await context.Database.BeginTransactionAsync();
             await ReputationHelper.SetReputationAsync(context, user.Id, reputation);
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
         }
-        await RespondAsync(InteractionCallback.ChannelMessageWithSource($"**{Context.Config.Emojis.Success} {string.Format(Context.Config.Interaction.ReputationCommands.ReputationSetResponse, user, reputation)}**"));
+        await RespondAsync(InteractionCallback.ChannelMessageWithSource($"**{_config.Emojis.Success} {string.Format(_config.Interaction.ReputationCommands.ReputationSetResponse, user, reputation)}**"));
     }
 
     public class NameTranslationsProvider : ITranslationsProvider

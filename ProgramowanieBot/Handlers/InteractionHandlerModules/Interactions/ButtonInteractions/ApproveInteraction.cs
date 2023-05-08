@@ -11,18 +11,27 @@ using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Interactions.ButtonInteractions;
 
-public class ApproveInteraction : InteractionModule<ExtendedButtonInteractionContext>
+public class ApproveInteraction : InteractionModule<ButtonInteractionContext>
 {
-    [InteractionRequireUserChannelPermissions<ExtendedButtonInteractionContext>(Permissions.Administrator)]
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ConfigService _config;
+
+    public ApproveInteraction(IServiceProvider serviceProvider, ConfigService config)
+    {
+        _serviceProvider = serviceProvider;
+        _config = config;
+    }
+
+    [InteractionRequireUserChannelPermissions<ButtonInteractionContext>(Permissions.Administrator)]
     [Interaction("approve")]
     public async Task ApproveAsync(ulong helper, bool giveReputation, ulong? helper2 = null, bool? giveReputation2 = null)
     {
         var channelId = Context.Interaction.Channel.Id;
-        await using (var context = Context.Provider.GetRequiredService<DataContext>())
+        await using (var context = _serviceProvider.GetRequiredService<DataContext>())
         {
             await using var transaction = await context.Database.BeginTransactionAsync();
             if (await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved))
-                throw new(Context.Config.Interaction.PostAlreadyResolvedResponse);
+                throw new(_config.Interaction.PostAlreadyResolvedResponse);
 
             await PostsHelper.ResolvePostAsync(context, channelId);
             if (giveReputation)
@@ -35,7 +44,7 @@ public class ApproveInteraction : InteractionModule<ExtendedButtonInteractionCon
         }
         await RespondAsync(InteractionCallback.UpdateMessage(new()
         {
-            Content = $"**{Context.Config.Emojis.Success} {Context.Config.Interaction.PostResolvedResponse}**",
+            Content = $"**{_config.Emojis.Success} {_config.Interaction.PostResolvedResponse}**",
             Components = Enumerable.Empty<ComponentProperties>(),
         }));
         var user = Context.User;
@@ -45,7 +54,7 @@ public class ApproveInteraction : InteractionModule<ExtendedButtonInteractionCon
             t.Archived = true;
 
             const int NameMaxLength = 100;
-            var name = $"{Context.Config.Interaction.PostResolvedPrefix} {channel.Name}";
+            var name = $"{_config.Interaction.PostResolvedPrefix} {channel.Name}";
             if (name.Length > NameMaxLength)
                 name = name[..NameMaxLength];
             t.Name = name;

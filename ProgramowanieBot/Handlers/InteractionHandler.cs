@@ -8,7 +8,6 @@ using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 using NetCord.Services.Interactions;
 
-using ProgramowanieBot.Handlers.InteractionHandlerModules;
 using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers;
@@ -17,14 +16,14 @@ internal class InteractionHandler : BaseHandler<ConfigService>
 {
     private readonly ApplicationCommandServiceManager _applicationCommandServiceManager;
 
-    private readonly ApplicationCommandService<ExtendedSlashCommandContext> _slashCommandService;
-    private readonly ApplicationCommandService<ExtendedUserCommandContext> _userCommandService;
-    private readonly ApplicationCommandService<ExtendedMessageCommandContext> _messageCommandService;
+    private readonly ApplicationCommandService<SlashCommandContext> _slashCommandService;
+    private readonly ApplicationCommandService<UserCommandContext> _userCommandService;
+    private readonly ApplicationCommandService<MessageCommandContext> _messageCommandService;
 
-    private readonly InteractionService<ExtendedButtonInteractionContext> _buttonInteractionService;
-    private readonly InteractionService<ExtendedStringMenuInteractionContext> _stringMenuInteractionService;
-    private readonly InteractionService<ExtendedUserMenuInteractionContext> _userMenuInteractionService;
-    private readonly InteractionService<ExtendedModalSubmitInteractionContext> _modalSubmitInteractionService;
+    private readonly InteractionService<ButtonInteractionContext> _buttonInteractionService;
+    private readonly InteractionService<StringMenuInteractionContext> _stringMenuInteractionService;
+    private readonly InteractionService<UserMenuInteractionContext> _userMenuInteractionService;
+    private readonly InteractionService<ModalSubmitInteractionContext> _modalSubmitInteractionService;
 
     private readonly TokenService _token;
 
@@ -85,13 +84,13 @@ internal class InteractionHandler : BaseHandler<ConfigService>
         {
             await (interaction switch
             {
-                SlashCommandInteraction slashCommandInteraction => _slashCommandService.ExecuteAsync(new(slashCommandInteraction, Client, Config, Provider)),
-                UserCommandInteraction userCommandInteraction => _userCommandService.ExecuteAsync(new(userCommandInteraction, Client, Config, Provider)),
-                MessageCommandInteraction messageCommandInteraction => _messageCommandService.ExecuteAsync(new(messageCommandInteraction, Client, Config, Provider)),
-                ButtonInteraction buttonInteraction => _buttonInteractionService.ExecuteAsync(new(buttonInteraction, Client, Config, Provider)),
-                StringMenuInteraction stringMenuInteraction => _stringMenuInteractionService.ExecuteAsync(new(stringMenuInteraction, Client, Config, Provider)),
-                UserMenuInteraction userMenuInteraction => _userMenuInteractionService.ExecuteAsync(new(userMenuInteraction, Client, Config, Provider)),
-                ModalSubmitInteraction modalSubmitInteraction => _modalSubmitInteractionService.ExecuteAsync(new(modalSubmitInteraction, Client, Config, Provider)),
+                SlashCommandInteraction slashCommandInteraction => _slashCommandService.ExecuteAsync(new(slashCommandInteraction, Client), Provider),
+                UserCommandInteraction userCommandInteraction => _userCommandService.ExecuteAsync(new(userCommandInteraction, Client), Provider),
+                MessageCommandInteraction messageCommandInteraction => _messageCommandService.ExecuteAsync(new(messageCommandInteraction, Client), Provider),
+                ButtonInteraction buttonInteraction => _buttonInteractionService.ExecuteAsync(new(buttonInteraction, Client), Provider),
+                StringMenuInteraction stringMenuInteraction => _stringMenuInteractionService.ExecuteAsync(new(stringMenuInteraction, Client), Provider),
+                UserMenuInteraction userMenuInteraction => _userMenuInteractionService.ExecuteAsync(new(userMenuInteraction, Client), Provider),
+                ModalSubmitInteraction modalSubmitInteraction => _modalSubmitInteractionService.ExecuteAsync(new(modalSubmitInteraction, Client), Provider),
                 _ => throw new("Invalid interaction."),
             });
         }

@@ -13,8 +13,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
-    <PackageReference Include="NetCord" Version="1.0.0-alpha.184" />
-    <PackageReference Include="NetCord.Services" Version="1.0.0-alpha.101" />
+    <PackageReference Include="NetCord" Version="1.0.0-alpha.186" />
+    <PackageReference Include="NetCord.Services" Version="1.0.0-alpha.102" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>

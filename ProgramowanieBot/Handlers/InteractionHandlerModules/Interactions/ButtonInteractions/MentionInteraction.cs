@@ -7,18 +7,25 @@ using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Interactions.ButtonInteractions;
 
-public class MentionInteraction : InteractionModule<ExtendedButtonInteractionContext>
+public class MentionInteraction : InteractionModule<ButtonInteractionContext>
 {
     private static readonly HashSet<ulong> _mentionedThreadIds = new();
 
+    private readonly ConfigService _config;
+
+    public MentionInteraction(ConfigService config)
+    {
+        _config = config;
+    }
+
     [Interaction("mention")]
-    public async Task MentionAsync([AllowedUser<ExtendedButtonInteractionContext>] ulong threadOwnerId, ulong roleId)
+    public async Task MentionAsync([AllowedUser<ButtonInteractionContext>] ulong threadOwnerId, ulong roleId)
     {
         var channelId = Context.Interaction.Channel.Id;
         lock (_mentionedThreadIds)
         {
             if (_mentionedThreadIds.Contains(channelId))
-                throw new(Context.Config.Interaction.AlreadyMentionedResponse);
+                throw new(_config.Interaction.AlreadyMentionedResponse);
             _mentionedThreadIds.Add(channelId);
         }
 
@@ -28,7 +35,7 @@ public class MentionInteraction : InteractionModule<ExtendedButtonInteractionCon
             {
                 new ActionRowProperties(new ButtonProperties[]
                 {
-                    new ActionButtonProperties($"close:{threadOwnerId}", Context.Config.GuildThread.PostCloseButtonLabel, ButtonStyle.Danger),
+                    new ActionButtonProperties($"close:{threadOwnerId}", _config.GuildThread.PostCloseButtonLabel, ButtonStyle.Danger),
                 }),
             },
         }));

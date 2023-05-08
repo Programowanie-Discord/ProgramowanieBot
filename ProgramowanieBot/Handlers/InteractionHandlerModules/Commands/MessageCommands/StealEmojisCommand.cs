@@ -7,14 +7,21 @@ using NetCord.Services.ApplicationCommands;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands.MessageCommands;
 
-public partial class StealEmojisCommand : ApplicationCommandModule<ExtendedMessageCommandContext>
+public partial class StealEmojisCommand : ApplicationCommandModule<MessageCommandContext>
 {
+    private readonly ConfigService _config;
+
+    public StealEmojisCommand(ConfigService config)
+    {
+        _config = config;
+    }
+
     [MessageCommand("Steal Emojis", DefaultGuildUserPermissions = Permissions.ManageGuildExpressions, NameTranslationsProviderType = typeof(NameTranslationsProvider))]
     public Task StealEmojisAsync()
     {
         var matches = GetEmojiRegex().Matches(Context.Target.Content);
         if (matches.Count == 0)
-            throw new(Context.Config.Interaction.StealEmoji.NoEmojisFoundResponse);
+            throw new(_config.Interaction.StealEmoji.NoEmojisFoundResponse);
 
         return RespondAsync(InteractionCallback.ChannelMessageWithSource(new()
         {
@@ -22,7 +29,7 @@ public partial class StealEmojisCommand : ApplicationCommandModule<ExtendedMessa
             {
                 new StringMenuProperties("steal-emoji", GetOptions())
                 {
-                    Placeholder = Context.Config.Interaction.StealEmoji.StealEmojisMenuPlaceholder,
+                    Placeholder = _config.Interaction.StealEmoji.StealEmojisMenuPlaceholder,
                 },
             },
             Flags = MessageFlags.Ephemeral,

@@ -7,10 +7,17 @@ using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.StringMenuInteractions;
 
-public class MentionInteraction : InteractionModule<ExtendedStringMenuInteractionContext>
+public class MentionInteraction : InteractionModule<StringMenuInteractionContext>
 {
+    private readonly ConfigService _config;
+
+    public MentionInteraction(ConfigService config)
+    {
+        _config = config;
+    }
+
     [Interaction("mention")]
-    public async Task MentionAsync([AllowedUser<ExtendedStringMenuInteractionContext>] ulong threadOwnerId)
+    public async Task MentionAsync([AllowedUser<StringMenuInteractionContext>] ulong threadOwnerId)
     {
         await RespondAsync(InteractionCallback.UpdateMessage(new()
         {
@@ -18,7 +25,7 @@ public class MentionInteraction : InteractionModule<ExtendedStringMenuInteractio
             {
                 new ActionRowProperties(new ButtonProperties[]
                 {
-                    new ActionButtonProperties($"close:{threadOwnerId}", Context.Config.GuildThread.PostCloseButtonLabel, ButtonStyle.Danger),
+                    new ActionButtonProperties($"close:{threadOwnerId}", _config.GuildThread.PostCloseButtonLabel, ButtonStyle.Danger),
                 }),
             },
         }));

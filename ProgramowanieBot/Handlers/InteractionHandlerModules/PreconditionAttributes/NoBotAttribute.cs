@@ -1,16 +1,16 @@
-﻿using NetCord;
-using NetCord.Services;
+﻿using Microsoft.Extensions.DependencyInjection;
 
-using ProgramowanieBot.Handlers.InteractionHandlerModules;
+using NetCord;
+using NetCord.Services;
 
 namespace ProgramowanieBot;
 
-internal class NoBotAttribute<TContext> : ParameterPreconditionAttribute<TContext> where TContext : IExtendedContext
+internal class NoBotAttribute<TContext> : ParameterPreconditionAttribute<TContext> where TContext : IContext
 {
-    public override ValueTask EnsureCanExecuteAsync(object? value, TContext context)
+    public override ValueTask EnsureCanExecuteAsync(object? value, TContext context, IServiceProvider? serviceProvider)
     {
         if (value != null && ((User)value!).IsBot)
-            throw new(context.Config.Interaction.SelectedBotAsHelperResponse);
+            throw new(serviceProvider!.GetRequiredService<ConfigService>().Interaction.SelectedBotAsHelperResponse);
 
         return default;
     }

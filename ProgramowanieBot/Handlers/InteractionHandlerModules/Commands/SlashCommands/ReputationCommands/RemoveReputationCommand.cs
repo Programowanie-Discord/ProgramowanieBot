@@ -10,8 +10,17 @@ using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands.SlashCommands.ReputationCommands;
 
-public class RemoveReputationCommand : ApplicationCommandModule<ExtendedSlashCommandContext>
+public class RemoveReputationCommand : ApplicationCommandModule<SlashCommandContext>
 {
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ConfigService _config;
+
+    public RemoveReputationCommand(IServiceProvider serviceProvider, ConfigService config)
+    {
+        _serviceProvider = serviceProvider;
+        _config = config;
+    }
+
     [SlashCommand("remove-reputation", "Removes user reputation",
         NameTranslationsProviderType = typeof(NameTranslationsProvider),
         DescriptionTranslationsProviderType = typeof(DescriptionTranslationsProvider),
@@ -26,14 +35,14 @@ public class RemoveReputationCommand : ApplicationCommandModule<ExtendedSlashCom
             DescriptionTranslationsProviderType = typeof(ReputationDescriptionTranslationsProvider),
             MinValue = 1)] long reputation)
     {
-        await using (var context = Context.Provider.GetRequiredService<DataContext>())
+        await using (var context = _serviceProvider.GetRequiredService<DataContext>())
         {
             await using var transaction = await context.Database.BeginTransactionAsync();
             await ReputationHelper.AddReputationAsync(context, user.Id, -reputation);
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
         }
-        await RespondAsync(InteractionCallback.ChannelMessageWithSource($"**{Context.Config.Emojis.Success} {string.Format(Context.Config.Interaction.ReputationCommands.ReputationRemovedResponse, user, reputation)}**"));
+        await RespondAsync(InteractionCallback.ChannelMessageWithSource($"**{_config.Emojis.Success} {string.Format(_config.Interaction.ReputationCommands.ReputationRemovedResponse, user, reputation)}**"));
     }
 
     public class NameTranslationsProvider : ITranslationsProvider
