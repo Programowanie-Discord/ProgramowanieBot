@@ -19,7 +19,7 @@ public class StealEmojiInteraction : InteractionModule<ModalSubmitInteractionCon
 
         var data = await _httpClient.GetByteArrayAsync(ImageUrl.CustomEmoji(id, format).ToString());
 
-        var emoji = await Context.Client.Rest.CreateGuildEmojiAsync(Context.Interaction.GuildId.GetValueOrDefault(), new(Context.Components[0].Value.Trim().Replace(' ', '_').PadRight(2, '_'), new(data, format)));
+        var emoji = await Context.Client.Rest.CreateGuildEmojiAsync(Context.Interaction.GuildId.GetValueOrDefault(), new(Context.Components[0].Value.Trim().Replace(' ', '_').PadRight(2, '_'), new(format, data)));
 
         await RespondAsync(InteractionCallback.ChannelMessageWithSource(new()
         {
