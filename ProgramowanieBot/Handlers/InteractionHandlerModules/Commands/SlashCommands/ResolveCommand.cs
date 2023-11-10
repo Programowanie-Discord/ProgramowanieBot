@@ -24,12 +24,15 @@ public class ResolveCommand(IServiceProvider serviceProvider, ConfigService conf
         [NoBot<SlashCommandContext>]
         User? helper2 = null)
     {
-        var channelId = Context.Interaction.Channel.Id;
+        var channel = Context.Channel;
+        var channelId = channel.Id;
         await using (var context = serviceProvider.GetRequiredService<DataContext>())
         {
             if (await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved))
                 throw new(config.Interaction.PostAlreadyResolvedResponse);
         }
+
+        await Context.Client.Rest.SendMessageAsync(config.Interaction.PostResolvedNotificationChannelId, $"**{string.Format(config.Interaction.PostResolvedNotificationMessage, channel)}**");
 
         var isHelper2 = helper2 != null && helper != helper2;
         var user = Context.User;

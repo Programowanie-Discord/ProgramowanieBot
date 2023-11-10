@@ -14,7 +14,8 @@ public class ResolveInteraction(IServiceProvider serviceProvider, ConfigService 
     [Interaction("resolve")]
     public async Task<InteractionCallback> ResolveAsync()
     {
-        var channelId = Context.Interaction.Channel.Id;
+        var channel = Context.Channel;
+        var channelId = channel.Id;
         await using (var context = serviceProvider.GetRequiredService<DataContext>())
         {
             if (await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved))
@@ -37,6 +38,8 @@ public class ResolveInteraction(IServiceProvider serviceProvider, ConfigService 
         }
         else
             helper2 = null;
+
+        await Context.Client.Rest.SendMessageAsync(config.Interaction.PostResolvedNotificationChannelId, $"**{string.Format(config.Interaction.PostResolvedNotificationMessage, channel)}**");
 
         var user = Context.User;
         return InteractionCallback.Message(new()

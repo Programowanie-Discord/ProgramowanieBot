@@ -90,6 +90,8 @@ public class ConfigService
         public string PostClosedResponse { get; init; }
         public string PostResolvedPrefix { get; init; }
         public string PostResolvedResponse { get; init; }
+        public ulong PostResolvedNotificationChannelId { get; init; }
+        public string PostResolvedNotificationMessage { get; init; }
         public string PostsSyncedResponse { get; init; }
         public ReactionCommandsConfig ReactionCommands { get; init; }
         public ReputationCommandsConfig ReputationCommands { get; init; }
