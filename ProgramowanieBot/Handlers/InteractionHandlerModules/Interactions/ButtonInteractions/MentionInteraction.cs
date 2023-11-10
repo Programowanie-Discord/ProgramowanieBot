@@ -1,28 +1,31 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+
 using NetCord;
 using NetCord.Rest;
 using NetCord.Services.Interactions;
 
+using ProgramowanieBot.Data;
 using ProgramowanieBot.Handlers.InteractionHandlerModules.PreconditionAttributes;
 using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Interactions.ButtonInteractions;
 
-public class MentionInteraction(ConfigService config) : InteractionModule<ButtonInteractionContext>
+public class MentionInteraction(ConfigService config, IServiceProvider serviceProvider) : InteractionModule<ButtonInteractionContext>
 {
-    private static readonly HashSet<ulong> _mentionedThreadIds = [];
-
     [Interaction("mention")]
     public async Task MentionAsync([AllowedUser<ButtonInteractionContext>] ulong threadOwnerId, ulong roleId)
     {
-        var channelId = Context.Interaction.Channel.Id;
+        var channelId = Context.Channel.Id;
 
-        var mentionedThreadIds = _mentionedThreadIds;
-        lock (mentionedThreadIds)
-        {
-            if (mentionedThreadIds.Contains(channelId))
-                throw new(config.Interaction.AlreadyMentionedResponse);
-            mentionedThreadIds.Add(channelId);
-        }
+        bool resolved;
+        await using (var context = serviceProvider.GetRequiredService<DataContext>())
+            resolved = await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved);
+
+        if (resolved)
+            throw new(config.Interaction.PostAlreadyResolvedResponse);
+
+        ThreadMentionHelper.EnsureFirstMention(channelId, config);
 
         await RespondAsync(InteractionCallback.ModifyMessage(m =>
         {
@@ -34,6 +37,6 @@ public class MentionInteraction(ConfigService config) : InteractionModule<Button
                 }),
             };
         }));
-        await ThreadHelper.MentionRoleAsync(Context.Client.Rest, channelId, roleId, Context.Guild!);
+        await ThreadMentionHelper.MentionRoleAsync(Context.Client.Rest, channelId, roleId, Context.Guild!);
     }
 }

@@ -6,8 +6,21 @@ using NetCord.Rest;
 
 namespace ProgramowanieBot.Helpers;
 
-internal class ThreadHelper
+internal static class ThreadMentionHelper
 {
+    private static readonly HashSet<ulong> _mentionedThreadIds = [];
+
+    public static void EnsureFirstMention(ulong threadId, ConfigService config)
+    {
+        var mentionedThreadIds = _mentionedThreadIds;
+        lock (mentionedThreadIds)
+        {
+            if (mentionedThreadIds.Contains(threadId))
+                throw new(config.Interaction.AlreadyMentionedResponse);
+            mentionedThreadIds.Add(threadId);
+        }
+    }
+
     public static async Task MentionRoleAsync(RestClient client, ulong threadId, ulong roleId, Guild guild)
     {
         var message = await client.SendMessageAsync(threadId, $"<@&{roleId}>");
