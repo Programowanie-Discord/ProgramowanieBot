@@ -103,7 +103,7 @@ internal class InteractionHandler : BaseHandler<ConfigService>
             };
             try
             {
-                await interaction.SendResponseAsync(InteractionCallback.ChannelMessageWithSource(message));
+                await interaction.SendResponseAsync(InteractionCallback.Message(message));
             }
             catch (RestException restException) when (restException.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {

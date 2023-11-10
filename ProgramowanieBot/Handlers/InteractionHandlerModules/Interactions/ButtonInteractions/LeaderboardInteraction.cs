@@ -1,24 +1,17 @@
 ﻿using NetCord;
+using NetCord.Rest;
 using NetCord.Services.Interactions;
 
 using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Interactions.ButtonInteractions;
 
-public class LeaderboardInteraction : InteractionModule<ButtonInteractionContext>
+public class LeaderboardInteraction(IServiceProvider serviceProvider, ConfigService config) : InteractionModule<ButtonInteractionContext>
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ConfigService _config;
-
-    public LeaderboardInteraction(IServiceProvider serviceProvider, ConfigService config)
-    {
-        _serviceProvider = serviceProvider;
-        _config = config;
-    }
-
     [Interaction("leaderboard")]
-    public async Task LeaderboardAsync(int page)
+    public async Task<InteractionCallback> LeaderboardAsync(int page)
     {
-        await RespondAsync(InteractionCallback.UpdateMessage(await LeaderboardHelper.CreateLeaderboardAsync(Context, _serviceProvider, _config, page)));
+        var (embed, component) = await LeaderboardHelper.CreateLeaderboardAsync(Context, serviceProvider, config, page);
+        return InteractionCallback.ModifyMessage(m => (m.Embeds, m.Components) = ([embed], [component]));
     }
 }

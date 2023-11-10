@@ -4,23 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 using NetCord;
+using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 
 using ProgramowanieBot.Data;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands.SlashCommands;
 
-public class SyncResolvedPostNamesCommand : ApplicationCommandModule<SlashCommandContext>
+public class SyncResolvedPostNamesCommand(IServiceProvider serviceProvider, ConfigService config) : ApplicationCommandModule<SlashCommandContext>
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ConfigService _config;
-
-    public SyncResolvedPostNamesCommand(IServiceProvider serviceProvider, ConfigService config)
-    {
-        _serviceProvider = serviceProvider;
-        _config = config;
-    }
-
     [SlashCommand(
         "sync-resolved-post-names",
         "Adds or changes prefix of resolved posts",
@@ -35,11 +27,11 @@ public class SyncResolvedPostNamesCommand : ApplicationCommandModule<SlashComman
             DescriptionTranslationsProviderType = typeof(OldPrefixDescriptionTranslationsProvider))]
         string? oldPrefix = null)
     {
-        await RespondAsync(InteractionCallback.ChannelMessageWithSource($"**{_config.Emojis.Loading} {_config.Interaction.SyncingPostsResponse}**"));
+        await RespondAsync(InteractionCallback.Message($"**{config.Emojis.Loading} {config.Interaction.SyncingPostsResponse}**"));
         var oldPrefixWithSpace = $"{oldPrefix} ";
-        var prefix = _config.Interaction.PostResolvedPrefix;
+        var prefix = config.Interaction.PostResolvedPrefix;
         var prefixWithSpace = $"{prefix} ";
-        var helpChannelId = _config.GuildThread.HelpChannelId;
+        var helpChannelId = config.GuildThread.HelpChannelId;
         var responseTask = Context.Interaction.GetResponseAsync();
         var postsTask = Context.Client.Rest.GetPublicArchivedGuildThreadsAsync(helpChannelId).ToDictionaryAsync(t => t.Id);
         var activePosts = await Context.Client.Rest.GetActiveGuildThreadsAsync(Context.Interaction.GuildId.GetValueOrDefault());
@@ -53,7 +45,7 @@ public class SyncResolvedPostNamesCommand : ApplicationCommandModule<SlashComman
         const int NameMaxLength = 100;
         ChangeNameDelegate changeName = oldPrefix != null ? ChangeNameWithOldPrefix : ChangeNameWithoutOldPrefix;
 
-        await using (var context = _serviceProvider.GetRequiredService<DataContext>())
+        await using (var context = serviceProvider.GetRequiredService<DataContext>())
         {
             await foreach (var post in context.Posts.Where(p => p.IsResolved).AsAsyncEnumerable())
             {
@@ -69,7 +61,11 @@ public class SyncResolvedPostNamesCommand : ApplicationCommandModule<SlashComman
             }
         }
         var response = await responseTask;
-        await response.ReplyAsync($"**{_config.Emojis.Success} {_config.Interaction.PostsSyncedResponse}**", failIfNotExists: false);
+        await response.ReplyAsync(new()
+        {
+            Content = $"**{config.Emojis.Success} {config.Interaction.PostsSyncedResponse}**",
+            FailIfNotExists = false,
+        });
 
         bool ChangeNameWithOldPrefix(GuildThread guildThread, out string name)
         {

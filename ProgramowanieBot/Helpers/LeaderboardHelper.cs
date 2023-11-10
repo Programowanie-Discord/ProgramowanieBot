@@ -11,7 +11,9 @@ namespace ProgramowanieBot.Helpers;
 
 internal static class LeaderboardHelper
 {
-    public static async Task<InteractionMessageProperties> CreateLeaderboardAsync<TContext>(TContext context, IServiceProvider serviceProvider, ConfigService config, int page) where TContext : IUserContext, IGuildContext
+    public record struct Leaderboard(EmbedProperties Embed, ComponentProperties Component);
+
+    public static async Task<Leaderboard> CreateLeaderboardAsync<TContext>(TContext context, IServiceProvider serviceProvider, ConfigService config, int page) where TContext : IUserContext, IGuildContext
     {
         string description;
         bool more;
@@ -25,37 +27,31 @@ internal static class LeaderboardHelper
         }
         var user = context.User;
 
-        return new()
+        EmbedProperties embed = new()
         {
-            Embeds = new EmbedProperties[]
+            Title = config.Interaction.ReputationCommands.LeaderboardEmbedTitle,
+            Description = description,
+            Footer = new()
             {
-                new()
-                {
-                    Title = config.Interaction.ReputationCommands.LeaderboardEmbedTitle,
-                    Description = description,
-                    Footer = new()
-                    {
-                        Text = string.Format(config.Interaction.ReputationCommands.LeaderboardEmbedFooter, $"{user.Username}#{user.Discriminator:D4}"),
-                        IconUrl = (user.HasAvatar ? user.GetAvatarUrl() : user.DefaultAvatarUrl).ToString(),
-                    },
-                    Timestamp = DateTimeOffset.UtcNow,
-                    Color = config.EmbedColor,
-                }
+                Text = string.Format(config.Interaction.ReputationCommands.LeaderboardEmbedFooter, $"{user.Username}#{user.Discriminator:D4}"),
+                IconUrl = (user.HasAvatar ? user.GetAvatarUrl() : user.DefaultAvatarUrl).ToString(),
             },
-            Components = new ComponentProperties[]
-            {
-                new ActionRowProperties(new ButtonProperties[]
-                {
-                    new ActionButtonProperties($"leaderboard:{page - 1}", new EmojiProperties(config.Emojis.Left), ButtonStyle.Secondary)
-                    {
-                        Disabled = page == 0,
-                    },
-                    new ActionButtonProperties($"leaderboard:{page + 1}", new EmojiProperties(config.Emojis.Right), ButtonStyle.Secondary)
-                    {
-                        Disabled = !more,
-                    },
-                }),
-            },
+            Timestamp = DateTimeOffset.UtcNow,
+            Color = config.EmbedColor,
         };
+
+        ActionRowProperties component = new(new ButtonProperties[]
+        {
+            new ActionButtonProperties($"leaderboard:{page - 1}", new EmojiProperties(config.Emojis.Left), ButtonStyle.Secondary)
+            {
+                Disabled = page == 0,
+            },
+            new ActionButtonProperties($"leaderboard:{page + 1}", new EmojiProperties(config.Emojis.Right), ButtonStyle.Secondary)
+            {
+                Disabled = !more,
+            },
+        });
+
+        return new(embed, component);
     }
 }

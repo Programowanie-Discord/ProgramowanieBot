@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
 using NetCord;
-using NetCord.Gateway;
 using NetCord.Services;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.PreconditionAttributes;

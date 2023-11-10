@@ -3,6 +3,7 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using NetCord;
+using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 
 using ProgramowanieBot.Data;
@@ -10,22 +11,13 @@ using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands.SlashCommands.ReputationCommands;
 
-public class AddReputationCommand : ApplicationCommandModule<SlashCommandContext>
+public class AddReputationCommand(IServiceProvider serviceProvider, ConfigService config) : ApplicationCommandModule<SlashCommandContext>
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ConfigService _config;
-
-    public AddReputationCommand(IServiceProvider serviceProvider, ConfigService config)
-    {
-        _serviceProvider = serviceProvider;
-        _config = config;
-    }
-
     [SlashCommand("add-reputation", "Adds user reputation",
         NameTranslationsProviderType = typeof(NameTranslationsProvider),
         DescriptionTranslationsProviderType = typeof(DescriptionTranslationsProvider),
         DefaultGuildUserPermissions = Permissions.Administrator)]
-    public async Task AddReputationAsync(
+    public async Task<InteractionCallback> AddReputationAsync(
         [SlashCommandParameter(
             Description = "User to add reputation to",
             NameTranslationsProviderType = typeof(UserNameTranslationsProvider),
@@ -35,14 +27,14 @@ public class AddReputationCommand : ApplicationCommandModule<SlashCommandContext
             DescriptionTranslationsProviderType = typeof(ReputationDescriptionTranslationsProvider),
             MinValue = 1)] long reputation)
     {
-        await using (var context = _serviceProvider.GetRequiredService<DataContext>())
+        await using (var context = serviceProvider.GetRequiredService<DataContext>())
         {
             await using var transaction = await context.Database.BeginTransactionAsync();
             await ReputationHelper.AddReputationAsync(context, user.Id, reputation);
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
         }
-        await RespondAsync(InteractionCallback.ChannelMessageWithSource($"**{_config.Emojis.Success} {string.Format(_config.Interaction.ReputationCommands.ReputationAddedResponse, user, reputation)}**"));
+        return InteractionCallback.Message($"**{config.Emojis.Success} {string.Format(config.Interaction.ReputationCommands.ReputationAddedResponse, user, reputation)}**");
     }
 
     public class NameTranslationsProvider : ITranslationsProvider

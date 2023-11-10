@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-using NetCord;
+using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands;
@@ -8,9 +8,9 @@ namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands;
 public class PingCommand : ApplicationCommandModule<SlashCommandContext>
 {
     [SlashCommand("ping", "Shows bot's latency", DescriptionTranslationsProviderType = typeof(DescriptionTranslationsProvider), DMPermission = true)]
-    public Task PingAsync()
+    public InteractionCallback Ping()
     {
-        return RespondAsync(InteractionCallback.ChannelMessageWithSource($"**Pong! {Math.Round(Context.Client.Latency.TotalMilliseconds)} ms**"));
+        return InteractionCallback.Message($"**Pong! {Math.Round(Context.Client.Latency.TotalMilliseconds)} ms**");
     }
 
     public class DescriptionTranslationsProvider : ITranslationsProvider

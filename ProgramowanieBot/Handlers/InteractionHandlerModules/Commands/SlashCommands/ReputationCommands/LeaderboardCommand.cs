@@ -1,27 +1,23 @@
 ﻿using System.Globalization;
 
-using NetCord;
+using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 
 using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands.SlashCommands.ReputationCommands;
 
-public class LeaderboardCommand : ApplicationCommandModule<SlashCommandContext>
+public class LeaderboardCommand(IServiceProvider serviceProvider, ConfigService config) : ApplicationCommandModule<SlashCommandContext>
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ConfigService _config;
-
-    public LeaderboardCommand(IServiceProvider serviceProvider, ConfigService config)
-    {
-        _serviceProvider = serviceProvider;
-        _config = config;
-    }
-
     [SlashCommand("leaderboard", "Shows reputation leaderboard", NameTranslationsProviderType = typeof(NameTranslationsProvider), DescriptionTranslationsProviderType = typeof(DescriptionTranslationsProvider))]
-    public async Task LeaderboardAsync()
+    public async Task<InteractionCallback> LeaderboardAsync()
     {
-        await RespondAsync(InteractionCallback.ChannelMessageWithSource(await LeaderboardHelper.CreateLeaderboardAsync(Context, _serviceProvider, _config, 0)));
+        var (embed, component) = await LeaderboardHelper.CreateLeaderboardAsync(Context, serviceProvider, config, 0);
+        return InteractionCallback.Message(new()
+        {
+            Embeds = [embed],
+            Components = [component],
+        });
     }
 
     public class NameTranslationsProvider : ITranslationsProvider

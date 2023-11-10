@@ -1,33 +1,27 @@
 ﻿using System.Globalization;
 
 using NetCord;
+using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands.MessageCommands.ReactionCommands;
 
-public class AddReactionsCommand : ApplicationCommandModule<MessageCommandContext>
+public class AddReactionsCommand(ConfigService config) : ApplicationCommandModule<MessageCommandContext>
 {
-    private readonly ConfigService _config;
-
-    public AddReactionsCommand(ConfigService config)
-    {
-        _config = config;
-    }
-
     [RequireHelpChannel<MessageCommandContext>]
     [RequireOwnMessage<MessageCommandContext>]
     [RequireNotStartMessage<MessageCommandContext>]
     [MessageCommand("Add Reactions", NameTranslationsProviderType = typeof(NameTranslationsProvider))]
-    public async Task AddReactionsAsync()
+    public async Task<InteractionCallback> AddReactionsAsync()
     {
         var message = Context.Target;
         await message.AddReactionAsync("⬆️");
         await message.AddReactionAsync("⬇️");
-        await RespondAsync(InteractionCallback.ChannelMessageWithSource(new()
+        return InteractionCallback.Message(new()
         {
-            Content = $"**{_config.Emojis.Success} {_config.Interaction.ReactionCommands.ReactionsAddedResponse}**",
+            Content = $"**{config.Emojis.Success} {config.Interaction.ReactionCommands.ReactionsAddedResponse}**",
             Flags = MessageFlags.Ephemeral,
-        }));
+        });
     }
 
     public class NameTranslationsProvider : ITranslationsProvider

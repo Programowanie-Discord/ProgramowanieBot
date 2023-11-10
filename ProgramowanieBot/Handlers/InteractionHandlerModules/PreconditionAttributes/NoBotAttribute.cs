@@ -5,7 +5,7 @@ using NetCord.Services;
 
 namespace ProgramowanieBot;
 
-internal class NoBotAttribute<TContext> : ParameterPreconditionAttribute<TContext> where TContext : IContext
+internal class NoBotAttribute<TContext> : ParameterPreconditionAttribute<TContext>
 {
     public override ValueTask EnsureCanExecuteAsync(object? value, TContext context, IServiceProvider? serviceProvider)
     {
