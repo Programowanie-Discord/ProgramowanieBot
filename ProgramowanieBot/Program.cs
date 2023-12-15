@@ -2,41 +2,49 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using NetCord;
 using NetCord.Gateway;
+using NetCord.Hosting.Gateway;
+using NetCord.Hosting.Services;
+using NetCord.Hosting.Services.ApplicationCommands;
+using NetCord.Hosting.Services.Interactions;
+using NetCord.Services.ApplicationCommands;
+using NetCord.Services.Interactions;
 
 using ProgramowanieBot;
 using ProgramowanieBot.Data;
-using ProgramowanieBot.Handlers;
+using ProgramowanieBot.Helpers;
 
-var builder = Host.CreateDefaultBuilder(args);
-builder.ConfigureServices(services =>
-{
-    services.AddSingleton(ConfigService.Create())
-            .AddDbContext<DataContext>((provider, optionsBuilder) =>
-            {
-                var connection = provider.GetRequiredService<ConfigService>().Database.CreateConnectionString();
-                optionsBuilder.UseNpgsql(connection);
-            }, ServiceLifetime.Transient, ServiceLifetime.Singleton)
-            .AddSingleton<TokenService>()
-            .AddSingleton<HttpClient>()
-            .AddSingleton<GatewayClient>(provider => new(provider.GetRequiredService<TokenService>().Token, new()
-            {
-                Intents = GatewayIntents.Guilds | GatewayIntents.GuildUsers | GatewayIntents.GuildPresences | GatewayIntents.GuildMessages | GatewayIntents.MessageContent | GatewayIntents.GuildMessageReactions | GatewayIntents.GuildMessageTyping,
-            }))
-            .AddHandlers()
-            .AddHostedService<BotService>();
-});
-var host = builder.Build();
-await host.RunAsync();
-
-static file class ServiceCollectionExtensions
-{
-    public static IServiceCollection AddHandlers(this IServiceCollection services)
+var builder = Host.CreateDefaultBuilder(args)
+    .UseDiscordGateway(options =>
     {
-        return services.AddSingleton<IHandler, InteractionHandler>()
-                       .AddSingleton<IHandler, MessageHandler>()
-                       .AddSingleton<IHandler, GuildThreadCreateHandler>()
-                       .AddSingleton<IHandler, ReactionHandler>()
-                       .AddSingleton<IHandler, DailyReputationHandler>();
-    }
-}
+        options.Configuration = new()
+        {
+            Intents = GatewayIntents.Guilds | GatewayIntents.GuildUsers | GatewayIntents.GuildPresences | GatewayIntents.GuildMessages | GatewayIntents.MessageContent | GatewayIntents.GuildMessageReactions | GatewayIntents.GuildMessageTyping,
+        };
+    })
+    .UseApplicationCommandService<SlashCommandInteraction, SlashCommandContext>(OptionsHelper.ConfigureApplicationCommandService)
+    .UseApplicationCommandService<UserCommandInteraction, UserCommandContext>(OptionsHelper.ConfigureApplicationCommandService)
+    .UseApplicationCommandService<MessageCommandInteraction, MessageCommandContext>(OptionsHelper.ConfigureApplicationCommandService)
+    .UseInteractionService<ButtonInteraction, ButtonInteractionContext>(OptionsHelper.ConfigureInteractionService)
+    .UseInteractionService<StringMenuInteraction, StringMenuInteractionContext>(OptionsHelper.ConfigureInteractionService)
+    .UseInteractionService<UserMenuInteraction, UserMenuInteractionContext>(OptionsHelper.ConfigureInteractionService)
+    .UseInteractionService<ModalSubmitInteraction, ModalSubmitInteractionContext>(OptionsHelper.ConfigureInteractionService)
+    .ConfigureServices(services =>
+    {
+        services.AddSingleton(Configuration.Create())
+                .AddDbContext<DataContext>((provider, optionsBuilder) =>
+                {
+                    var connection = provider.GetRequiredService<Configuration>().Database.CreateConnectionString();
+                    optionsBuilder.UseNpgsql(connection);
+                }, ServiceLifetime.Transient, ServiceLifetime.Singleton)
+                .AddHttpClient()
+                .AddGatewayEventHandlers(typeof(Program).Assembly)
+                .AddHostedService<DailyReputationBackgroundService>();
+    });
+
+var host = builder.Build()
+    .AddModules(typeof(Program).Assembly)
+    .UseGatewayEventHandlers();
+
+await host.RunAsync();

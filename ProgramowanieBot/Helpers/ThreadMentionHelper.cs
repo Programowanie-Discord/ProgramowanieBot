@@ -10,13 +10,13 @@ internal static class ThreadMentionHelper
 {
     private static readonly HashSet<ulong> _mentionedThreadIds = [];
 
-    public static void EnsureFirstMention(ulong threadId, ConfigService config)
+    public static void EnsureFirstMention(ulong threadId, Configuration configuration)
     {
         var mentionedThreadIds = _mentionedThreadIds;
         lock (mentionedThreadIds)
         {
             if (mentionedThreadIds.Contains(threadId))
-                throw new(config.Interaction.AlreadyMentionedResponse);
+                throw new(configuration.Interaction.AlreadyMentionedResponse);
             mentionedThreadIds.Add(threadId);
         }
     }

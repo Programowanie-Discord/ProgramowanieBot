@@ -13,7 +13,7 @@ internal static class LeaderboardHelper
 {
     public record struct Leaderboard(EmbedProperties Embed, ComponentProperties Component);
 
-    public static async Task<Leaderboard> CreateLeaderboardAsync<TContext>(TContext context, IServiceProvider serviceProvider, ConfigService config, int page) where TContext : IUserContext, IGuildContext
+    public static async Task<Leaderboard> CreateLeaderboardAsync<TContext>(TContext context, IServiceProvider serviceProvider, Configuration configuration, int page) where TContext : IUserContext, IGuildContext
     {
         string description;
         bool more;
@@ -29,24 +29,24 @@ internal static class LeaderboardHelper
 
         EmbedProperties embed = new()
         {
-            Title = config.Interaction.ReputationCommands.LeaderboardEmbedTitle,
+            Title = configuration.Interaction.ReputationCommands.LeaderboardEmbedTitle,
             Description = description,
             Footer = new()
             {
-                Text = string.Format(config.Interaction.ReputationCommands.LeaderboardEmbedFooter, $"{user.Username}#{user.Discriminator:D4}"),
+                Text = string.Format(configuration.Interaction.ReputationCommands.LeaderboardEmbedFooter, $"{user.Username}#{user.Discriminator:D4}"),
                 IconUrl = (user.HasAvatar ? user.GetAvatarUrl() : user.DefaultAvatarUrl).ToString(),
             },
             Timestamp = DateTimeOffset.UtcNow,
-            Color = config.EmbedColor,
+            Color = configuration.EmbedColor,
         };
 
         ActionRowProperties component = new(new ButtonProperties[]
         {
-            new ActionButtonProperties($"leaderboard:{page - 1}", new EmojiProperties(config.Emojis.Left), ButtonStyle.Secondary)
+            new ActionButtonProperties($"leaderboard:{page - 1}", new EmojiProperties(configuration.Emojis.Left), ButtonStyle.Secondary)
             {
                 Disabled = page == 0,
             },
-            new ActionButtonProperties($"leaderboard:{page + 1}", new EmojiProperties(config.Emojis.Right), ButtonStyle.Secondary)
+            new ActionButtonProperties($"leaderboard:{page + 1}", new EmojiProperties(configuration.Emojis.Right), ButtonStyle.Secondary)
             {
                 Disabled = !more,
             },
