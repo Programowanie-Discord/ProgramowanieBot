@@ -12,8 +12,11 @@ public class Configuration
 {
     public static Configuration Create()
     {
-        var options = Serialization.Options;
-        options.ReadCommentHandling = JsonCommentHandling.Skip;
+        JsonSerializerOptions options = new(Discord.SerializerOptions)
+        {
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            TypeInfoResolver = null,
+        };
         using var stream = File.OpenRead("appsettings.json");
         return JsonSerializer.Deserialize<Configuration>(stream, options)!;
     }
