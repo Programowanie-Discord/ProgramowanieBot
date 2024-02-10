@@ -2,6 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using NetCord;
 using NetCord.Rest;
@@ -11,11 +12,13 @@ using ProgramowanieBot.Data;
 
 namespace ProgramowanieBot.InteractionHandlerModules.Commands.UserCommands;
 
-public class ShowProfileCommand(IServiceProvider serviceProvider, Configuration configuration) : ApplicationCommandModule<UserCommandContext>
+public class ShowProfileCommand(IServiceProvider serviceProvider, IOptions<Configuration> options) : ApplicationCommandModule<UserCommandContext>
 {
     [UserCommand("Show Profile", NameTranslationsProviderType = typeof(NameTranslationsProvider))]
     public async Task<InteractionCallback> ShowProfileAsync()
     {
+        var configuration = options.Value;
+
         var target = Context.Target;
         if (target.IsBot)
             throw new(configuration.Interaction.ShowProfileOnBotResponse);
@@ -26,8 +29,8 @@ public class ShowProfileCommand(IServiceProvider serviceProvider, Configuration 
         var reputation = profile != null ? profile.Reputation : 0L;
         return InteractionCallback.Message(new()
         {
-            Embeds = new EmbedProperties[]
-            {
+            Embeds =
+            [
                 new()
                 {
                     Author = new()
@@ -35,22 +38,22 @@ public class ShowProfileCommand(IServiceProvider serviceProvider, Configuration 
                         Name = $"{target.Username}#{target.Discriminator:D4}",
                         IconUrl = target.HasAvatar ? target.GetAvatarUrl().ToString() : target.DefaultAvatarUrl.ToString(),
                     },
-                    Fields = new EmbedFieldProperties[]
-                    {
+                    Fields =
+                    [
                         new()
                         {
                             Name = "Reputation",
                             Value = reputation.ToString(),
                         },
-                    },
+                    ],
                     Footer = new()
                     {
                         IconUrl = user.HasAvatar ? user.GetAvatarUrl().ToString() : user.DefaultAvatarUrl.ToString(),
                         Text = $"{user.Username}#{user.Discriminator:D4}",
                     },
-                    Color = configuration.EmbedColor,
+                    Color = new(configuration.EmbedColor),
                 }
-            },
+            ],
             Flags = MessageFlags.Ephemeral,
         });
     }

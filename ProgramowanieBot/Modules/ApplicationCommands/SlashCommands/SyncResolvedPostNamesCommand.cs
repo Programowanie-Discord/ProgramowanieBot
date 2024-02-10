@@ -2,6 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using NetCord;
 using NetCord.Rest;
@@ -11,7 +12,7 @@ using ProgramowanieBot.Data;
 
 namespace ProgramowanieBot.InteractionHandlerModules.Commands.SlashCommands;
 
-public class SyncResolvedPostNamesCommand(IServiceProvider serviceProvider, Configuration configuration) : ApplicationCommandModule<SlashCommandContext>
+public class SyncResolvedPostNamesCommand(IServiceProvider serviceProvider, IOptions<Configuration> options) : ApplicationCommandModule<SlashCommandContext>
 {
     [SlashCommand(
         "sync-resolved-post-names",
@@ -27,6 +28,8 @@ public class SyncResolvedPostNamesCommand(IServiceProvider serviceProvider, Conf
             DescriptionTranslationsProviderType = typeof(OldPrefixDescriptionTranslationsProvider))]
         string? oldPrefix = null)
     {
+        var configuration = options.Value;
+
         await RespondAsync(InteractionCallback.Message($"**{configuration.Emojis.Loading} {configuration.Interaction.SyncingPostsResponse}**"));
         var oldPrefixWithSpace = $"{oldPrefix} ";
         var prefix = configuration.Interaction.PostResolvedPrefix;

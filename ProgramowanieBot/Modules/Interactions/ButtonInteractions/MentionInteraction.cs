@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using NetCord;
 using NetCord.Rest;
@@ -10,11 +11,13 @@ using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.InteractionHandlerModules.Interactions.ButtonInteractions;
 
-public class MentionInteraction(Configuration configuration, IServiceProvider serviceProvider) : InteractionModule<ButtonInteractionContext>
+public class MentionInteraction(IOptions<Configuration> options, IServiceProvider serviceProvider) : InteractionModule<ButtonInteractionContext>
 {
     [Interaction("mention")]
     public async Task MentionAsync([AllowedUser<ButtonInteractionContext>] ulong threadOwnerId, ulong roleId)
     {
+        var configuration = options.Value;
+
         var channelId = Context.Channel.Id;
 
         bool resolved;
@@ -24,17 +27,17 @@ public class MentionInteraction(Configuration configuration, IServiceProvider se
         if (resolved)
             throw new(configuration.Interaction.PostAlreadyResolvedResponse);
 
-        ThreadMentionHelper.EnsureFirstMention(channelId, configuration);
+        ThreadMentionHelper.EnsureFirstMention(channelId, options);
 
         await RespondAsync(InteractionCallback.ModifyMessage(m =>
         {
-            m.Components = new ComponentProperties[]
-            {
-                new ActionRowProperties(new ButtonProperties[]
-                {
+            m.Components =
+            [
+                new ActionRowProperties(
+                [
                     new ActionButtonProperties($"close:{threadOwnerId}", configuration.GuildThread.PostCloseButtonLabel, ButtonStyle.Danger),
-                }),
-            };
+                ]),
+            ];
         }));
         await ThreadMentionHelper.MentionRoleAsync(Context.Client.Rest, channelId, roleId, Context.Guild!);
     }

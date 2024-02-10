@@ -1,30 +1,34 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 
+using Microsoft.Extensions.Options;
+
 using NetCord;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 
 namespace ProgramowanieBot.Handlers.InteractionHandlerModules.Commands.MessageCommands;
 
-public partial class StealEmojisCommand(Configuration configuration) : ApplicationCommandModule<MessageCommandContext>
+public partial class StealEmojisCommand(IOptions<Configuration> options) : ApplicationCommandModule<MessageCommandContext>
 {
     [MessageCommand("Steal Emojis", DefaultGuildUserPermissions = Permissions.ManageGuildExpressions, NameTranslationsProviderType = typeof(NameTranslationsProvider))]
     public InteractionCallback StealEmojis()
     {
+        var configuration = options.Value;
+
         var matches = GetEmojiRegex().Matches(Context.Target.Content);
         if (matches.Count == 0)
             throw new(configuration.Interaction.StealEmoji.NoEmojisFoundResponse);
 
         return InteractionCallback.Message(new()
         {
-            Components = new ComponentProperties[]
-            {
+            Components =
+            [
                 new StringMenuProperties("steal-emoji", GetOptions())
                 {
                     Placeholder = configuration.Interaction.StealEmoji.StealEmojisMenuPlaceholder,
                 },
-            },
+            ],
             Flags = MessageFlags.Ephemeral,
         });
 

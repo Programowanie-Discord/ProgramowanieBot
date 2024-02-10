@@ -1,12 +1,14 @@
 ﻿using System.Globalization;
 
+using Microsoft.Extensions.Options;
+
 using NetCord;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 
 namespace ProgramowanieBot.InteractionHandlerModules.Commands.MessageCommands.ReactionCommands;
 
-public class AddReactionsCommand(Configuration configuration) : ApplicationCommandModule<MessageCommandContext>
+public class AddReactionsCommand(IOptions<Configuration> options) : ApplicationCommandModule<MessageCommandContext>
 {
     [RequireHelpChannel<MessageCommandContext>]
     [RequireOwnMessage<MessageCommandContext>]
@@ -17,6 +19,7 @@ public class AddReactionsCommand(Configuration configuration) : ApplicationComma
         var message = Context.Target;
         await message.AddReactionAsync("⬆️");
         await message.AddReactionAsync("⬇️");
+        var configuration = options.Value;
         return InteractionCallback.Message(new()
         {
             Content = $"**{configuration.Emojis.Success} {configuration.Interaction.ReactionCommands.ReactionsAddedResponse}**",

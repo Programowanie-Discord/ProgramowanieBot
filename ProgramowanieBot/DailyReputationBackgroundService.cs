@@ -2,15 +2,15 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 using NetCord.Gateway;
-using NetCord.Rest;
 
 using ProgramowanieBot.Data;
 
 namespace ProgramowanieBot;
 
-internal class DailyReputationBackgroundService(GatewayClient client, Configuration configuration, IServiceProvider services) : BackgroundService
+internal class DailyReputationBackgroundService(GatewayClient client, IOptions<Configuration> options, IServiceProvider services) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -19,6 +19,8 @@ internal class DailyReputationBackgroundService(GatewayClient client, Configurat
         using PeriodicTimer timer = new(day);
         while (true)
         {
+            var configuration = options.Value;
+
             await using (var context = services.GetRequiredService<DataContext>())
             {
                 await using var transaction = await context.Database.BeginTransactionAsync(default);
@@ -32,14 +34,14 @@ internal class DailyReputationBackgroundService(GatewayClient client, Configurat
                     {
                         await client.Rest.SendMessageAsync(configuration.DailyReputationReactions.ChannelId, new()
                         {
-                            Embeds = new EmbedProperties[]
-                            {
+                            Embeds =
+                            [
                                 new()
                                 {
                                     Description = stringBuilder.ToString(),
-                                    Color = configuration.EmbedColor,
+                                    Color = new(configuration.EmbedColor),
                                 },
-                            },
+                            ],
                         });
                         stringBuilder.Clear();
                     }
@@ -48,14 +50,14 @@ internal class DailyReputationBackgroundService(GatewayClient client, Configurat
                 if (stringBuilder.Length != 0)
                     await client.Rest.SendMessageAsync(configuration.DailyReputationReactions.ChannelId, new()
                     {
-                        Embeds = new EmbedProperties[]
-                        {
+                        Embeds =
+                        [
                             new()
                             {
                                 Description = stringBuilder.ToString(),
-                                Color = configuration.EmbedColor,
+                                Color = new(configuration.EmbedColor),
                             },
-                        },
+                        ],
                     });
                 await context.SaveChangesAsync(default);
                 await transaction.CommitAsync(default);

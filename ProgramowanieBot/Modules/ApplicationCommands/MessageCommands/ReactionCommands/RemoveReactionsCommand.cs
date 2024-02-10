@@ -1,12 +1,14 @@
 ﻿using System.Globalization;
 
+using Microsoft.Extensions.Options;
+
 using NetCord;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 
 namespace ProgramowanieBot.InteractionHandlerModules.Commands.MessageCommands.ReactionCommands;
 
-public class RemoveReactionsCommand(Configuration configuration) : ApplicationCommandModule<MessageCommandContext>
+public class RemoveReactionsCommand(IOptions<Configuration> options) : ApplicationCommandModule<MessageCommandContext>
 {
     [RequireHelpChannel<MessageCommandContext>]
     [RequireOwnMessage<MessageCommandContext>]
@@ -18,6 +20,7 @@ public class RemoveReactionsCommand(Configuration configuration) : ApplicationCo
         var task = message.DeleteReactionAsync("⬆️");
         await message.DeleteReactionAsync("⬇️");
         await task;
+        var configuration = options.Value;
         return InteractionCallback.Message(new()
         {
             Content = $"**{configuration.Emojis.Success} {configuration.Interaction.ReactionCommands.ReactionsRemovedResponse}**",

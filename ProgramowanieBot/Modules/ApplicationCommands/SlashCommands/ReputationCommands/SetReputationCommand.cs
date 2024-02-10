@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using NetCord;
 using NetCord.Rest;
@@ -11,7 +12,7 @@ using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.InteractionHandlerModules.Commands.SlashCommands.ReputationCommands;
 
-public class SetReputationCommand(IServiceProvider serviceProvider, Configuration configuration) : ApplicationCommandModule<SlashCommandContext>
+public class SetReputationCommand(IServiceProvider serviceProvider, IOptions<Configuration> options) : ApplicationCommandModule<SlashCommandContext>
 {
     [SlashCommand("set-reputation", "Sets user reputation",
         NameTranslationsProviderType = typeof(NameTranslationsProvider),
@@ -33,6 +34,8 @@ public class SetReputationCommand(IServiceProvider serviceProvider, Configuratio
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
         }
+
+        var configuration = options.Value;
         return InteractionCallback.Message($"**{configuration.Emojis.Success} {string.Format(configuration.Interaction.ReputationCommands.ReputationSetResponse, user, reputation)}**");
     }
 

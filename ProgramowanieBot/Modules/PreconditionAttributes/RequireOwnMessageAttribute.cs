@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using NetCord.Services;
 using NetCord.Services.ApplicationCommands;
@@ -7,11 +8,11 @@ namespace ProgramowanieBot.InteractionHandlerModules;
 
 internal class RequireOwnMessageAttribute<TContext> : PreconditionAttribute<TContext> where TContext : MessageCommandContext
 {
-    public override ValueTask EnsureCanExecuteAsync(TContext context, IServiceProvider? serviceProvider)
+    public override ValueTask<PreconditionResult> EnsureCanExecuteAsync(TContext context, IServiceProvider? serviceProvider)
     {
         if (context.Target.Author != context.User)
-            throw new(serviceProvider!.GetRequiredService<Configuration>().Interaction.NotOwnMessageResponse);
+            return new(PreconditionResult.Fail(serviceProvider!.GetRequiredService<IOptions<Configuration>>().Value.Interaction.NotOwnMessageResponse));
 
-        return default;
+        return new(PreconditionResult.Success);
     }
 }

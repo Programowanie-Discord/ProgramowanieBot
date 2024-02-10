@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using NetCord;
 using NetCord.Rest;
@@ -13,7 +14,7 @@ internal static class LeaderboardHelper
 {
     public record struct Leaderboard(EmbedProperties Embed, ComponentProperties Component);
 
-    public static async Task<Leaderboard> CreateLeaderboardAsync<TContext>(TContext context, IServiceProvider serviceProvider, Configuration configuration, int page) where TContext : IUserContext, IGuildContext
+    public static async Task<Leaderboard> CreateLeaderboardAsync<TContext>(TContext context, IServiceProvider serviceProvider, IOptions<Configuration> options, int page) where TContext : IUserContext, IGuildContext
     {
         string description;
         bool more;
@@ -27,6 +28,7 @@ internal static class LeaderboardHelper
         }
         var user = context.User;
 
+        var configuration = options.Value;
         EmbedProperties embed = new()
         {
             Title = configuration.Interaction.ReputationCommands.LeaderboardEmbedTitle,
@@ -37,11 +39,11 @@ internal static class LeaderboardHelper
                 IconUrl = (user.HasAvatar ? user.GetAvatarUrl() : user.DefaultAvatarUrl).ToString(),
             },
             Timestamp = DateTimeOffset.UtcNow,
-            Color = configuration.EmbedColor,
+            Color = new(configuration.EmbedColor),
         };
 
-        ActionRowProperties component = new(new ButtonProperties[]
-        {
+        ActionRowProperties component = new(
+        [
             new ActionButtonProperties($"leaderboard:{page - 1}", new EmojiProperties(configuration.Emojis.Left), ButtonStyle.Secondary)
             {
                 Disabled = page == 0,
@@ -50,7 +52,7 @@ internal static class LeaderboardHelper
             {
                 Disabled = !more,
             },
-        });
+        ]);
 
         return new(embed, component);
     }

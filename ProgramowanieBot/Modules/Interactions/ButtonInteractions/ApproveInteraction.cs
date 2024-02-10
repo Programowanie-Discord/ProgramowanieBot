@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using NetCord;
 using NetCord.Rest;
@@ -11,13 +12,16 @@ using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.InteractionHandlerModules.Interactions.ButtonInteractions;
 
-public class ApproveInteraction(IServiceProvider serviceProvider, Configuration configuration) : InteractionModule<ButtonInteractionContext>
+public class ApproveInteraction(IServiceProvider serviceProvider, IOptions<Configuration> options) : InteractionModule<ButtonInteractionContext>
 {
-    [InteractionRequireUserChannelPermissions<ButtonInteractionContext>(Permissions.Administrator)]
+    [RequireUserPermissions<ButtonInteractionContext>(Permissions.Administrator)]
     [Interaction("approve")]
     public async Task ApproveAsync(ulong helper, bool giveReputation, ulong? helper2 = null, bool? giveReputation2 = null)
     {
-        var channelId = Context.Interaction.Channel.Id;
+        var configuration = options.Value;
+
+        var channel = (GuildThread)Context.Channel;
+        var channelId = channel.Id;
         await using (var context = serviceProvider.GetRequiredService<DataContext>())
         {
             await using var transaction = await context.Database.BeginTransactionAsync();
@@ -33,13 +37,14 @@ public class ApproveInteraction(IServiceProvider serviceProvider, Configuration 
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
         }
+
         await RespondAsync(InteractionCallback.ModifyMessage(m =>
         {
             m.Content = $"**{configuration.Emojis.Success} {configuration.Interaction.PostResolvedResponse}**";
             m.Components = [];
         }));
+
         var user = Context.User;
-        var channel = (GuildThread)Context.Channel!;
         await channel.ModifyAsync(t =>
         {
             t.Archived = true;

@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using NetCord;
 using NetCord.Gateway;
@@ -15,7 +16,7 @@ namespace ProgramowanieBot.Handlers;
 
 [GatewayEvent(nameof(GatewayClient.MessageReactionAdd))]
 [GatewayEvent(nameof(GatewayClient.MessageReactionRemove))]
-internal class ReactionHandler(GatewayClient client, ILogger<ReactionHandler> logger, Configuration configuration, IServiceProvider services) : IGatewayEventHandler<MessageReactionAddEventArgs>, IGatewayEventHandler<MessageReactionRemoveEventArgs>
+internal class ReactionHandler(GatewayClient client, ILogger<ReactionHandler> logger, IOptions<Configuration> options, IServiceProvider services) : IGatewayEventHandler<MessageReactionAddEventArgs>, IGatewayEventHandler<MessageReactionRemoveEventArgs>
 {
     private record struct MessageAuthor(bool IsBot, ulong Id);
 
@@ -26,7 +27,7 @@ internal class ReactionHandler(GatewayClient client, ILogger<ReactionHandler> lo
         if (client.Cache.Guilds.TryGetValue(guildId, out var guild))
         {
             if (guild.ActiveThreads.TryGetValue(channelId, out thread))
-                return thread.ParentId == configuration.GuildThread.HelpChannelId;
+                return thread.ParentId == options.Value.GuildThread.HelpChannelId;
             else
             {
                 logger.LogWarning("Thread {channelId} was not found", channelId);
@@ -55,7 +56,7 @@ internal class ReactionHandler(GatewayClient client, ILogger<ReactionHandler> lo
     {
         var channelId = args.ChannelId;
         var userId = args.UserId;
-        if (userId == client.Cache.User!.Id || !args.Emoji.IsStandard || !IsHelpChannel(args.GuildId.GetValueOrDefault(), channelId, out var thread) || userId == thread.OwnerId)
+        if (userId == client.Id || args.Emoji.Id.HasValue || !IsHelpChannel(args.GuildId.GetValueOrDefault(), channelId, out var thread) || userId == thread.OwnerId)
             return;
 
         var author = await GetAuthorAsync(channelId, args.MessageId);
@@ -90,7 +91,7 @@ internal class ReactionHandler(GatewayClient client, ILogger<ReactionHandler> lo
     {
         var channelId = args.ChannelId;
         var userId = args.UserId;
-        if (userId == client.Cache.User!.Id || !args.Emoji.IsStandard || !IsHelpChannel(args.GuildId.GetValueOrDefault(), channelId, out var thread) || userId == thread.OwnerId)
+        if (userId == client.Id || args.Emoji.Id.HasValue || !IsHelpChannel(args.GuildId.GetValueOrDefault(), channelId, out var thread) || userId == thread.OwnerId)
             return;
 
         var author = await GetAuthorAsync(channelId, args.MessageId);

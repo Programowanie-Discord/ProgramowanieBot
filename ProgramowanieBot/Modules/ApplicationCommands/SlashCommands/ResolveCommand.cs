@@ -2,6 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using NetCord;
 using NetCord.Rest;
@@ -11,7 +12,7 @@ using ProgramowanieBot.Data;
 
 namespace ProgramowanieBot.InteractionHandlerModules.Commands.SlashCommands;
 
-public class ResolveCommand(IServiceProvider serviceProvider, Configuration configuration) : ApplicationCommandModule<SlashCommandContext>
+public class ResolveCommand(IServiceProvider serviceProvider, IOptions<Configuration> options) : ApplicationCommandModule<SlashCommandContext>
 {
     [RequireThreadOwnerOfHelpChannel<SlashCommandContext>]
     [SlashCommand("resolve", "Closes your post and specifies who helped you", NameTranslationsProviderType = typeof(NameTranslationsProvider), DescriptionTranslationsProviderType = typeof(DescriptionTranslationsProvider))]
@@ -23,8 +24,11 @@ public class ResolveCommand(IServiceProvider serviceProvider, Configuration conf
         [NoBot<SlashCommandContext>]
         User? helper2 = null)
     {
+        var configuration = options.Value;
+
         var channel = Context.Channel;
         var channelId = channel.Id;
+
         await using (var context = serviceProvider.GetRequiredService<DataContext>())
             if (await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved))
                 throw new(configuration.Interaction.PostAlreadyResolvedResponse);
@@ -36,13 +40,13 @@ public class ResolveCommand(IServiceProvider serviceProvider, Configuration conf
         return InteractionCallback.Message(new()
         {
             Content = $"**{configuration.Emojis.Success} {(isHelper2 ? string.Format(configuration.Interaction.WaitingForApprovalWith2HelpersResponse, helper, helper2) : string.Format(configuration.Interaction.WaitingForApprovalResponse, helper))}**",
-            Components = new ComponentProperties[]
-            {
-                new ActionRowProperties(new ButtonProperties[]
-                {
+            Components =
+            [
+                new ActionRowProperties(
+                [
                     new ActionButtonProperties($"approve:{helper.Id}:{helper != user}:{(isHelper2 ? helper2!.Id : null)}:{(isHelper2 ? helper2 != user : null)}", configuration.Interaction.ApproveButtonLabel, ButtonStyle.Success),
-                }),
-            },
+                ]),
+            ],
             AllowedMentions = AllowedMentionsProperties.None,
         });
     }

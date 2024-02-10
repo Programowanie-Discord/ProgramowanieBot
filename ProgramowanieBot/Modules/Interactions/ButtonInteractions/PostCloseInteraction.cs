@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using NetCord;
 using NetCord.Rest;
@@ -9,7 +10,7 @@ using ProgramowanieBot.Data;
 
 namespace ProgramowanieBot.InteractionHandlerModules.Interactions.ButtonInteractions;
 
-public class PostCloseInteraction(IServiceProvider serviceProvider, Configuration configuration) : InteractionModule<ButtonInteractionContext>
+public class PostCloseInteraction(IServiceProvider serviceProvider, IOptions<Configuration> options) : InteractionModule<ButtonInteractionContext>
 {
     [Interaction("close")]
     public async Task CloseAsync([AllowedUser<ButtonInteractionContext>] ulong threadOwnerId)
@@ -19,6 +20,8 @@ public class PostCloseInteraction(IServiceProvider serviceProvider, Configuratio
         await using (var context = serviceProvider.GetRequiredService<DataContext>())
             resolved = await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved);
 
+        var configuration = options.Value;
+
         if (resolved)
         {
             await RespondAsync(InteractionCallback.Message(new()
@@ -27,7 +30,7 @@ public class PostCloseInteraction(IServiceProvider serviceProvider, Configuratio
                 Flags = MessageFlags.Ephemeral,
             }));
             var user = Context.User;
-            await Context.Client.Rest.ModifyGuildThreadAsync(channelId, c => c.Archived = true, new()
+            await Context.Client.Rest.ModifyGuildChannelAsync(channelId, c => c.Archived = true, new()
             {
                 AuditLogReason = $"Closed by: {user.Username}#{user.Discriminator:D4} ({user.Id})",
             });
@@ -35,18 +38,18 @@ public class PostCloseInteraction(IServiceProvider serviceProvider, Configuratio
         else
             await RespondAsync(InteractionCallback.Message(new()
             {
-                Components = new ComponentProperties[]
-                {
+                Components =
+                [
                     new UserMenuProperties("resolve")
                     {
                         Placeholder = configuration.Interaction.SelectHelperMenuPlaceholder,
                         MaxValues = 2,
                     },
-                    new ActionRowProperties(new ButtonProperties[]
-                    {
+                    new ActionRowProperties(
+                    [
                         new ActionButtonProperties($"resolve:{threadOwnerId}", configuration.Interaction.IHelpedMyselfButtonLabel, ButtonStyle.Danger),
-                    }),
-                },
+                    ]),
+                ],
                 Flags = MessageFlags.Ephemeral,
             }));
     }

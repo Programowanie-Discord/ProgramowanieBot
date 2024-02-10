@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using NetCord;
 using NetCord.Gateway;
@@ -12,18 +13,23 @@ using ProgramowanieBot.Helpers;
 namespace ProgramowanieBot.Handlers;
 
 [GatewayEvent(nameof(GatewayClient.MessageCreate))]
-internal partial class MessageCreateHandler(GatewayClient client, Configuration configuration, IServiceProvider services) : IGatewayEventHandler<Message>
+internal partial class MessageCreateHandler(GatewayClient client, IOptions<Configuration> options, IServiceProvider services) : IGatewayEventHandler<Message>
 {
-    private readonly TimeSpan _typingTimeout = TimeSpan.FromSeconds(configuration.GuildThread.ReactionTypingTimeoutSeconds);
+    private readonly TimeSpan _typingTimeout = TimeSpan.FromSeconds(options.Value.GuildThread.ReactionTypingTimeoutSeconds);
 
     public ValueTask HandleAsync(Message message)
     {
-        if (!message.Author.IsBot && message.Channel is PublicGuildThread thread && thread.ParentId == configuration.GuildThread.HelpChannelId)
-            return HandleMessageInHelpChannelAsync(message, thread);
+        if (!message.Author.IsBot && message.Channel is PublicGuildThread thread)
+        {
+            var configuration = options.Value;
+            if (thread.ParentId == configuration.GuildThread.HelpChannelId)
+                return HandleMessageInHelpChannelAsync(message, thread, configuration);
+        }
+
         return default;
     }
 
-    private ValueTask HandleMessageInHelpChannelAsync(Message message, PublicGuildThread thread)
+    private ValueTask HandleMessageInHelpChannelAsync(Message message, PublicGuildThread thread, Configuration configuration)
     {
         if (message.Id == thread.Id)
             return new(AddReactionsAsync());
@@ -113,10 +119,10 @@ internal partial class MessageCreateHandler(GatewayClient client, Configuration 
                             Content = configuration.GuildThread.PostResolveReminderMessage,
                             Components = new ActionRowProperties[]
                             {
-                                new(new ButtonProperties[]
-                                {
+                                new(
+                                [
                                     new ActionButtonProperties($"close:{thread.OwnerId}", configuration.GuildThread.PostCloseButtonLabel, ButtonStyle.Danger),
-                                }),
+                                ]),
                             },
                             MessageReference = new(message.Id),
                         });

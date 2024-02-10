@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using NetCord;
 using NetCord.Rest;
@@ -9,11 +10,13 @@ using ProgramowanieBot.Data;
 
 namespace ProgramowanieBot.InteractionHandlerModules.Interactions.UserMenuInteractions;
 
-public class ResolveInteraction(IServiceProvider serviceProvider, Configuration configuration) : InteractionModule<UserMenuInteractionContext>
+public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Configuration> options) : InteractionModule<UserMenuInteractionContext>
 {
     [Interaction("resolve")]
     public async Task<InteractionCallback> ResolveAsync()
     {
+        var configuration = options.Value;
+
         var channel = Context.Channel;
         var channelId = channel.Id;
         await using (var context = serviceProvider.GetRequiredService<DataContext>())
@@ -43,13 +46,13 @@ public class ResolveInteraction(IServiceProvider serviceProvider, Configuration 
         return InteractionCallback.Message(new()
         {
             Content = $"**{configuration.Emojis.Success} {(isHelper2 ? string.Format(configuration.Interaction.WaitingForApprovalWith2HelpersResponse, helper, helper2) : string.Format(configuration.Interaction.WaitingForApprovalResponse, helper))}**",
-            Components = new ComponentProperties[]
-            {
-                new ActionRowProperties(new ButtonProperties[]
-                {
+            Components =
+            [
+                new ActionRowProperties(
+                [
                     new ActionButtonProperties($"approve:{helper.Id}:{helper != user}:{(isHelper2 ? helper2!.Id : null)}:{(isHelper2 ? helper2 != user : null)}", configuration.Interaction.ApproveButtonLabel, ButtonStyle.Success),
-                }),
-            },
+                ]),
+            ],
             AllowedMentions = AllowedMentionsProperties.None,
         });
     }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using NetCord;
 using NetCord.Rest;
@@ -9,11 +10,13 @@ using ProgramowanieBot.Data;
 
 namespace ProgramowanieBot.InteractionHandlerModules.Interactions.ButtonInteractions;
 
-public class ResolveInteraction(IServiceProvider serviceProvider, Configuration configuration) : InteractionModule<ButtonInteractionContext>
+public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Configuration> options) : InteractionModule<ButtonInteractionContext>
 {
     [Interaction("resolve")]
     public async Task<InteractionCallback> ResolveAsync(ulong helper)
     {
+        var configuration = options.Value;
+
         var channel = Context.Channel;
         var channelId = channel.Id;
         await using (var context = serviceProvider.GetRequiredService<DataContext>())
@@ -25,13 +28,13 @@ public class ResolveInteraction(IServiceProvider serviceProvider, Configuration 
         return InteractionCallback.Message(new()
         {
             Content = $"**{configuration.Emojis.Success} {string.Format(configuration.Interaction.WaitingForApprovalResponse, $"<@{helper}>")}**",
-            Components = new ComponentProperties[]
-            {
-                new ActionRowProperties(new ButtonProperties[]
-                {
+            Components =
+            [
+                new ActionRowProperties(
+                [
                     new ActionButtonProperties($"approve:{helper}:{helper != Context.User.Id}::", configuration.Interaction.ApproveButtonLabel, ButtonStyle.Success),
-                }),
-            },
+                ]),
+            ],
             AllowedMentions = AllowedMentionsProperties.None,
         });
     }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 using NetCord;
 using NetCord.Rest;
@@ -10,7 +11,7 @@ using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.InteractionHandlerModules.Interactions.StringMenuInteractions;
 
-public class MentionInteraction(Configuration configuration, IServiceProvider serviceProvider) : InteractionModule<StringMenuInteractionContext>
+public class MentionInteraction(IOptions<Configuration> options, IServiceProvider serviceProvider) : InteractionModule<StringMenuInteractionContext>
 {
     [Interaction("mention")]
     public async Task MentionAsync([AllowedUser<StringMenuInteractionContext>] ulong threadOwnerId)
@@ -21,20 +22,22 @@ public class MentionInteraction(Configuration configuration, IServiceProvider se
         await using (var context = serviceProvider.GetRequiredService<DataContext>())
             resolved = await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved);
 
+        var configuration = options.Value;
+
         if (resolved)
             throw new(configuration.Interaction.PostAlreadyResolvedResponse);
 
-        ThreadMentionHelper.EnsureFirstMention(channelId, configuration);
+        ThreadMentionHelper.EnsureFirstMention(channelId, options);
 
         await RespondAsync(InteractionCallback.ModifyMessage(m =>
         {
-            m.Components = new ComponentProperties[]
-            {
-                new ActionRowProperties(new ButtonProperties[]
-                {
+            m.Components =
+            [
+                new ActionRowProperties(
+                [
                     new ActionButtonProperties($"close:{threadOwnerId}", configuration.GuildThread.PostCloseButtonLabel, ButtonStyle.Danger),
-                }),
-            };
+                ]),
+            ];
         }));
         await ThreadMentionHelper.MentionRoleAsync(Context.Client.Rest, channelId, ulong.Parse(Context.SelectedValues[0]), Context.Guild!);
     }

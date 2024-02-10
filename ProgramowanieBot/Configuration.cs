@@ -1,8 +1,4 @@
-﻿using System.Text.Json;
-
-using NetCord;
-
-using Npgsql;
+﻿using Npgsql;
 
 namespace ProgramowanieBot;
 
@@ -10,36 +6,25 @@ namespace ProgramowanieBot;
 
 public class Configuration
 {
-    public static Configuration Create()
-    {
-        JsonSerializerOptions options = new(Discord.SerializerOptions)
-        {
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            TypeInfoResolver = null,
-        };
-        using var stream = File.OpenRead("appsettings.json");
-        return JsonSerializer.Deserialize<Configuration>(stream, options)!;
-    }
-
-    public DailyReputationHandlerConfiguration DailyReputationReactions { get; init; }
-    public DatabaseConfiguration Database { get; init; }
-    public Color EmbedColor { get; init; }
-    public EmojisConfiguration Emojis { get; init; }
-    public GuildThreadHandlerConfiguration GuildThread { get; init; }
-    public InteractionHandlerConfiguration Interaction { get; init; }
+    public DailyReputationHandlerConfiguration DailyReputationReactions { get; set; }
+    public DatabaseConfiguration Database { get; set; }
+    public int EmbedColor { get; set; }
+    public EmojisConfiguration Emojis { get; set; }
+    public GuildThreadHandlerConfiguration GuildThread { get; set; }
+    public InteractionHandlerConfiguration Interaction { get; set; }
 
     public class DailyReputationHandlerConfiguration
     {
-        public ulong ChannelId { get; init; }
+        public ulong ChannelId { get; set; }
     }
 
     public class DatabaseConfiguration
     {
-        public string Database { get; init; }
-        public string Host { get; init; }
-        public string Password { get; init; }
-        public ushort? Port { get; init; }
-        public string Username { get; init; }
+        public string Database { get; set; }
+        public string Host { get; set; }
+        public string Password { get; set; }
+        public ushort? Port { get; set; }
+        public string Username { get; set; }
 
         public string CreateConnectionString()
         {
@@ -59,74 +44,74 @@ public class Configuration
 
     public class EmojisConfiguration
     {
-        public string Error { get; init; }
-        public string Left { get; init; }
-        public string Loading { get; init; }
-        public string Right { get; init; }
-        public string Success { get; init; }
+        public string Error { get; set; }
+        public string Left { get; set; }
+        public string Loading { get; set; }
+        public string Right { get; set; }
+        public string Success { get; set; }
     }
 
     public class GuildThreadHandlerConfiguration
     {
-        public ulong HelpChannelId { get; init; }
-        public string HelpPostStartMessage { get; init; }
-        public IReadOnlyDictionary<ulong, ulong> HelpTagsRoles { get; init; }
-        public int MaxPostResolveReminders { get; init; }
-        public string MentionMenuPlaceholder { get; init; }
-        public string PostCloseButtonLabel { get; init; }
-        public IReadOnlyList<string> PostResolveReminderKeywords { get; init; }
-        public string PostResolveReminderMessage { get; init; }
-        public double ReactionTypingTimeoutSeconds { get; init; }
+        public ulong HelpChannelId { get; set; }
+        public string HelpPostStartMessage { get; set; }
+        public IReadOnlyDictionary<ulong, ulong> HelpTagsRoles { get; set; }
+        public int MaxPostResolveReminders { get; set; }
+        public string MentionMenuPlaceholder { get; set; }
+        public string PostCloseButtonLabel { get; set; }
+        public IReadOnlyList<string> PostResolveReminderKeywords { get; set; }
+        public string PostResolveReminderMessage { get; set; }
+        public double ReactionTypingTimeoutSeconds { get; set; }
     }
 
     public class InteractionHandlerConfiguration
     {
-        public string AlreadyMentionedResponse { get; init; }
-        public string ApproveButtonLabel { get; init; }
-        public string IHelpedMyselfButtonLabel { get; init; }
-        public string NotHelpChannelResponse { get; init; }
-        public string NotOwnMessageResponse { get; init; }
-        public string OnlyPostCreatorOrModeratorResponse { get; init; }
-        public string OnlyPostCreatorResponse { get; init; }
-        public string PostAlreadyResolvedResponse { get; init; }
-        public string PostClosedResponse { get; init; }
-        public string PostResolvedPrefix { get; init; }
-        public string PostResolvedResponse { get; init; }
-        public ulong PostResolvedNotificationChannelId { get; init; }
-        public string PostResolvedNotificationMessage { get; init; }
-        public string PostsSyncedResponse { get; init; }
-        public ReactionCommandsConfiguration ReactionCommands { get; init; }
-        public ReputationCommandsConfiguration ReputationCommands { get; init; }
-        public string SelectedBotAsHelperResponse { get; init; }
-        public string SelectHelperMenuPlaceholder { get; init; }
-        public string ShowProfileOnBotResponse { get; init; }
-        public StealEmojiConfiguration StealEmoji { get; init; }
-        public string SyncingPostsResponse { get; init; }
-        public string WaitingForApprovalResponse { get; init; }
-        public string WaitingForApprovalWith2HelpersResponse { get; init; }
+        public string AlreadyMentionedResponse { get; set; }
+        public string ApproveButtonLabel { get; set; }
+        public string IHelpedMyselfButtonLabel { get; set; }
+        public string NotHelpChannelResponse { get; set; }
+        public string NotOwnMessageResponse { get; set; }
+        public string OnlyPostCreatorOrModeratorResponse { get; set; }
+        public string OnlyPostCreatorResponse { get; set; }
+        public string PostAlreadyResolvedResponse { get; set; }
+        public string PostClosedResponse { get; set; }
+        public string PostResolvedPrefix { get; set; }
+        public string PostResolvedResponse { get; set; }
+        public ulong PostResolvedNotificationChannelId { get; set; }
+        public string PostResolvedNotificationMessage { get; set; }
+        public string PostsSyncedResponse { get; set; }
+        public ReactionCommandsConfiguration ReactionCommands { get; set; }
+        public ReputationCommandsConfiguration ReputationCommands { get; set; }
+        public string SelectedBotAsHelperResponse { get; set; }
+        public string SelectHelperMenuPlaceholder { get; set; }
+        public string ShowProfileOnBotResponse { get; set; }
+        public StealEmojiConfiguration StealEmoji { get; set; }
+        public string SyncingPostsResponse { get; set; }
+        public string WaitingForApprovalResponse { get; set; }
+        public string WaitingForApprovalWith2HelpersResponse { get; set; }
 
         public class ReactionCommandsConfiguration
         {
-            public string HelpPostStartMessageResponse { get; init; }
-            public string ReactionsAddedResponse { get; init; }
-            public string ReactionsRemovedResponse { get; init; }
+            public string HelpPostStartMessageResponse { get; set; }
+            public string ReactionsAddedResponse { get; set; }
+            public string ReactionsRemovedResponse { get; set; }
         }
 
         public class ReputationCommandsConfiguration
         {
-            public string LeaderboardEmbedFooter { get; init; }
-            public string LeaderboardEmbedTitle { get; init; }
-            public string ReputationAddedResponse { get; init; }
-            public string ReputationRemovedResponse { get; init; }
-            public string ReputationSetResponse { get; init; }
+            public string LeaderboardEmbedFooter { get; set; }
+            public string LeaderboardEmbedTitle { get; set; }
+            public string ReputationAddedResponse { get; set; }
+            public string ReputationRemovedResponse { get; set; }
+            public string ReputationSetResponse { get; set; }
         }
 
         public class StealEmojiConfiguration
         {
-            public string AddEmojiModalNameInputLabel { get; init; }
-            public string AddEmojiModalTitle { get; init; }
-            public string NoEmojisFoundResponse { get; init; }
-            public string StealEmojisMenuPlaceholder { get; init; }
+            public string AddEmojiModalNameInputLabel { get; set; }
+            public string AddEmojiModalTitle { get; set; }
+            public string NoEmojisFoundResponse { get; set; }
+            public string StealEmojisMenuPlaceholder { get; set; }
         }
     }
 }
