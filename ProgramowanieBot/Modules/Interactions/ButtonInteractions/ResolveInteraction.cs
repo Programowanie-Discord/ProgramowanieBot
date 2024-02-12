@@ -24,8 +24,8 @@ public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Confi
                 throw new(configuration.Interaction.PostAlreadyResolvedResponse);
 
         await Context.Client.Rest.SendMessageAsync(configuration.Interaction.PostResolvedNotificationChannelId, $"**{string.Format(configuration.Interaction.PostResolvedNotificationMessage, channel)}**");
-
-        return InteractionCallback.Message(new()
+        
+        await Context.Channel.SendMessageAsync(new()
         {
             Content = $"**{configuration.Emojis.Success} {string.Format(configuration.Interaction.WaitingForApprovalResponse, $"<@{helper}>")}**",
             Components =
@@ -37,5 +37,7 @@ public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Confi
             ],
             AllowedMentions = AllowedMentionsProperties.None,
         });
+
+        return InteractionCallback.DeferredModifyMessage;
     }
 }

@@ -37,7 +37,8 @@ public class ResolveCommand(IServiceProvider serviceProvider, IOptions<Configura
 
         var isHelper2 = helper2 != null && helper != helper2;
         var user = Context.User;
-        return InteractionCallback.Message(new()
+
+        await Context.Channel.SendMessageAsync(new()
         {
             Content = $"**{configuration.Emojis.Success} {(isHelper2 ? string.Format(configuration.Interaction.WaitingForApprovalWith2HelpersResponse, helper, helper2) : string.Format(configuration.Interaction.WaitingForApprovalResponse, helper))}**",
             Components =
@@ -49,6 +50,8 @@ public class ResolveCommand(IServiceProvider serviceProvider, IOptions<Configura
             ],
             AllowedMentions = AllowedMentionsProperties.None,
         });
+
+        return InteractionCallback.DeferredModifyMessage;
     }
 
     public class NameTranslationsProvider : ITranslationsProvider
