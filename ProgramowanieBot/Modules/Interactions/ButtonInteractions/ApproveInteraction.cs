@@ -37,7 +37,7 @@ public class ApproveInteraction(IServiceProvider serviceProvider, IOptions<Confi
             await transaction.CommitAsync();
         }
 
-        GuildThread channel = (GuildThread)Context.Client.Rest.GetChannelAsync(channelId).Result;
+        var channel = (GuildThread)Context.Client.Rest.GetChannelAsync(channelId).Result;
 
         await RespondAsync(InteractionCallback.ModifyMessage(m =>
         {
@@ -52,6 +52,7 @@ public class ApproveInteraction(IServiceProvider serviceProvider, IOptions<Confi
             m.Content = $"**{configuration.Emojis.Success} {configuration.Interaction.PostResolvedResponse}**";
             m.Components = [];
         });
+        
         await channel.ModifyAsync(t =>
         {
             t.Archived = true;

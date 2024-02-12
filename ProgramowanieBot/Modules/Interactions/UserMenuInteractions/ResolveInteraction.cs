@@ -48,7 +48,6 @@ public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Confi
             AllowedMentions = AllowedMentionsProperties.None,
         });
 
-
         await Context.Client.Rest.SendMessageAsync(configuration.Interaction.PostResolvedNotificationChannelId, new()
         {
             Content = $"**{string.Format(configuration.Interaction.PostResolvedNotificationMessage, channel)}**",
