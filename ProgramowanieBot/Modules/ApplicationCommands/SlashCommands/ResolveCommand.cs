@@ -33,22 +33,26 @@ public class ResolveCommand(IServiceProvider serviceProvider, IOptions<Configura
             if (await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved))
                 throw new(configuration.Interaction.PostAlreadyResolvedResponse);
 
-        await Context.Client.Rest.SendMessageAsync(configuration.Interaction.PostResolvedNotificationChannelId, $"**{string.Format(configuration.Interaction.PostResolvedNotificationMessage, channel)}**");
-
         var isHelper2 = helper2 != null && helper != helper2;
         var user = Context.User;
 
-        await Context.Channel.SendMessageAsync(new()
+        var closingMessage = await Context.Channel.SendMessageAsync(new()
         {
             Content = $"**{configuration.Emojis.Success} {(isHelper2 ? string.Format(configuration.Interaction.WaitingForApprovalWith2HelpersMessage, helper, helper2) : string.Format(configuration.Interaction.WaitingForApprovalMessage, helper))}**",
+            AllowedMentions = AllowedMentionsProperties.None,
+        });
+
+
+        await Context.Client.Rest.SendMessageAsync(configuration.Interaction.PostResolvedNotificationChannelId, new()
+        {
+            Content = $"**{string.Format(configuration.Interaction.PostResolvedNotificationMessage, channel)}**",
             Components =
             [
                 new ActionRowProperties(
                 [
-                    new ActionButtonProperties($"approve:{helper.Id}:{helper != user}:{(isHelper2 ? helper2!.Id : null)}:{(isHelper2 ? helper2 != user : null)}", configuration.Interaction.ApproveButtonLabel, ButtonStyle.Success),
+                    new ActionButtonProperties($"approve:{Context.Channel.Id}:{closingMessage.Id}:{helper.Id}:{helper != user}:{(isHelper2 ? helper2!.Id : null)}:{(isHelper2 ? helper2 != user : null)}", configuration.Interaction.ApproveButtonLabel, ButtonStyle.Success),
                 ]),
             ],
-            AllowedMentions = AllowedMentionsProperties.None,
         });
 
         return InteractionCallback.DeferredModifyMessage;

@@ -40,20 +40,27 @@ public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Confi
         else
             helper2 = null;
 
-        await Context.Client.Rest.SendMessageAsync(configuration.Interaction.PostResolvedNotificationChannelId, $"**{string.Format(configuration.Interaction.PostResolvedNotificationMessage, channel)}**");
-
         var user = Context.User;
-        return InteractionCallback.Message(new()
+
+        var closingMessage = await Context.Channel.SendMessageAsync(new()
         {
             Content = $"**{configuration.Emojis.Success} {(isHelper2 ? string.Format(configuration.Interaction.WaitingForApprovalWith2HelpersMessage, helper, helper2) : string.Format(configuration.Interaction.WaitingForApprovalMessage, helper))}**",
+            AllowedMentions = AllowedMentionsProperties.None,
+        });
+
+
+        await Context.Client.Rest.SendMessageAsync(configuration.Interaction.PostResolvedNotificationChannelId, new()
+        {
+            Content = $"**{string.Format(configuration.Interaction.PostResolvedNotificationMessage, channel)}**",
             Components =
             [
                 new ActionRowProperties(
                 [
-                    new ActionButtonProperties($"approve:{helper.Id}:{helper != user}:{(isHelper2 ? helper2!.Id : null)}:{(isHelper2 ? helper2 != user : null)}", configuration.Interaction.ApproveButtonLabel, ButtonStyle.Success),
+                    new ActionButtonProperties($"approve:{Context.Channel.Id}:{closingMessage.Id}:{helper.Id}:{helper != user}:{(isHelper2 ? helper2!.Id : null)}:{(isHelper2 ? helper2 != user : null)}", configuration.Interaction.ApproveButtonLabel, ButtonStyle.Success),
                 ]),
             ],
-            AllowedMentions = AllowedMentionsProperties.None,
         });
+
+        return InteractionCallback.DeferredModifyMessage;
     }
 }

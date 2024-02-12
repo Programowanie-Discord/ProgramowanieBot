@@ -23,19 +23,22 @@ public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Confi
             if (await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved))
                 throw new(configuration.Interaction.PostAlreadyResolvedResponse);
 
-        await Context.Client.Rest.SendMessageAsync(configuration.Interaction.PostResolvedNotificationChannelId, $"**{string.Format(configuration.Interaction.PostResolvedNotificationMessage, channel)}**");
-        
-        await Context.Channel.SendMessageAsync(new()
+        var closingMessage = await Context.Channel.SendMessageAsync(new()
         {
-            Content = $"**{configuration.Emojis.Success} {string.Format(configuration.Interaction.WaitingForApprovalResponse, $"<@{helper}>")}**",
+            Content = $"**{configuration.Emojis.Success} {string.Format(configuration.Interaction.WaitingForApprovalMessage, $"<@{helper}>")}**",
+            AllowedMentions = AllowedMentionsProperties.None,
+        });
+
+        await Context.Client.Rest.SendMessageAsync(configuration.Interaction.PostResolvedNotificationChannelId, new()
+        {
+            Content = $"**{configuration.Emojis.Success} {string.Format(configuration.Interaction.PostResolvedNotificationMessage, channel)}**",
             Components =
             [
                 new ActionRowProperties(
                 [
-                    new ActionButtonProperties($"approve:{helper}:{helper != Context.User.Id}::", configuration.Interaction.ApproveButtonLabel, ButtonStyle.Success),
+                    new ActionButtonProperties($"approve:{Context.Channel.Id}:{closingMessage.Id}:{helper}:{helper != Context.User.Id}::", configuration.Interaction.ApproveButtonLabel, ButtonStyle.Success),
                 ]),
             ],
-            AllowedMentions = AllowedMentionsProperties.None,
         });
 
         return InteractionCallback.DeferredModifyMessage;

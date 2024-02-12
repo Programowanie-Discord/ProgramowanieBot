@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 using NetCord;
+using NetCord.Gateway;
 using NetCord.Rest;
 using NetCord.Services;
 using NetCord.Services.Interactions;
@@ -16,12 +17,10 @@ public class ApproveInteraction(IServiceProvider serviceProvider, IOptions<Confi
 {
     [RequireUserPermissions<ButtonInteractionContext>(Permissions.Administrator)]
     [Interaction("approve")]
-    public async Task ApproveAsync(ulong helper, bool giveReputation, ulong? helper2 = null, bool? giveReputation2 = null)
+    public async Task ApproveAsync(ulong channelId, ulong closingMessageId, ulong helper, bool giveReputation, ulong? helper2 = null, bool? giveReputation2 = null)
     {
         var configuration = options.Value;
 
-        var channel = (GuildThread)Context.Channel;
-        var channelId = channel.Id;
         await using (var context = serviceProvider.GetRequiredService<DataContext>())
         {
             await using var transaction = await context.Database.BeginTransactionAsync();
@@ -38,13 +37,21 @@ public class ApproveInteraction(IServiceProvider serviceProvider, IOptions<Confi
             await transaction.CommitAsync();
         }
 
+        GuildThread channel = (GuildThread)Context.Client.Rest.GetChannelAsync(channelId).Result;
+
         await RespondAsync(InteractionCallback.ModifyMessage(m =>
         {
-            m.Content = $"**{configuration.Emojis.Success} {configuration.Interaction.PostResolvedResponse}**";
+            m.Content = $"**{configuration.Emojis.Success} {string.Format(configuration.Interaction.ApprovedPostResolvingMessage, channel)}**";
             m.Components = [];
         }));
 
         var user = Context.User;
+
+        await channel.ModifyMessageAsync(closingMessageId, m =>
+        {
+            m.Content = $"**{configuration.Emojis.Success} {configuration.Interaction.PostResolvedResponse}**";
+            m.Components = [];
+        });
         await channel.ModifyAsync(t =>
         {
             t.Archived = true;

@@ -68,6 +68,7 @@ public class Configuration
     {
         public string AlreadyMentionedResponse { get; set; }
         public string ApproveButtonLabel { get; set; }
+        public string ApprovedPostResolvingMessage { get; set; }
         public string IHelpedMyselfButtonLabel { get; set; }
         public string NotHelpChannelResponse { get; set; }
         public string NotOwnMessageResponse { get; set; }
