@@ -45,7 +45,7 @@ public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Confi
         var user = Context.User;
         return InteractionCallback.Message(new()
         {
-            Content = $"**{configuration.Emojis.Success} {(isHelper2 ? string.Format(configuration.Interaction.WaitingForApprovalWith2HelpersResponse, helper, helper2) : string.Format(configuration.Interaction.WaitingForApprovalResponse, helper))}**",
+            Content = $"**{configuration.Emojis.Success} {(isHelper2 ? string.Format(configuration.Interaction.WaitingForApprovalWith2HelpersMessage, helper, helper2) : string.Format(configuration.Interaction.WaitingForApprovalMessage, helper))}**",
             Components =
             [
                 new ActionRowProperties(

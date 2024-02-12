@@ -87,8 +87,8 @@ public class Configuration
         public string ShowProfileOnBotResponse { get; set; }
         public StealEmojiConfiguration StealEmoji { get; set; }
         public string SyncingPostsResponse { get; set; }
-        public string WaitingForApprovalResponse { get; set; }
-        public string WaitingForApprovalWith2HelpersResponse { get; set; }
+        public string WaitingForApprovalMessage { get; set; }
+        public string WaitingForApprovalWith2HelpersMessage { get; set; }
 
         public class ReactionCommandsConfiguration
         {

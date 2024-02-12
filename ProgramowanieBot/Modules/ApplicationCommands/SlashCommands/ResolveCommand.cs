@@ -40,7 +40,7 @@ public class ResolveCommand(IServiceProvider serviceProvider, IOptions<Configura
 
         await Context.Channel.SendMessageAsync(new()
         {
-            Content = $"**{configuration.Emojis.Success} {(isHelper2 ? string.Format(configuration.Interaction.WaitingForApprovalWith2HelpersResponse, helper, helper2) : string.Format(configuration.Interaction.WaitingForApprovalResponse, helper))}**",
+            Content = $"**{configuration.Emojis.Success} {(isHelper2 ? string.Format(configuration.Interaction.WaitingForApprovalWith2HelpersMessage, helper, helper2) : string.Format(configuration.Interaction.WaitingForApprovalMessage, helper))}**",
             Components =
             [
                 new ActionRowProperties(
