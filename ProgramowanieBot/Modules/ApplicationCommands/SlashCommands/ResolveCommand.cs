@@ -9,6 +9,7 @@ using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 
 using ProgramowanieBot.Data;
+using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.InteractionHandlerModules.Commands.SlashCommands;
 
@@ -25,35 +26,13 @@ public class ResolveCommand(IServiceProvider serviceProvider, IOptions<Configura
         User? helper2 = null)
     {
         var configuration = options.Value;
-
-        var channel = Context.Channel;
-        var channelId = channel.Id;
+        var channelId = Context.Channel.Id;
 
         await using (var context = serviceProvider.GetRequiredService<DataContext>())
             if (await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved))
                 throw new(configuration.Interaction.PostAlreadyResolvedResponse);
 
-        var isHelper2 = helper2 != null && helper != helper2;
-        var user = Context.User;
-
-        var closingMessage = await Context.Channel.SendMessageAsync(new()
-        {
-            Content = $"**{configuration.Emojis.Success} {(isHelper2 ? string.Format(configuration.Interaction.WaitingForApprovalWith2HelpersMessage, helper, helper2) : string.Format(configuration.Interaction.WaitingForApprovalMessage, helper))}**",
-            AllowedMentions = AllowedMentionsProperties.None,
-        });
-
-
-        await Context.Client.Rest.SendMessageAsync(configuration.Interaction.PostResolvedNotificationChannelId, new()
-        {
-            Content = $"**{string.Format(configuration.Interaction.PostResolvedNotificationMessage, channel)}**",
-            Components =
-            [
-                new ActionRowProperties(
-                [
-                    new ActionButtonProperties($"approve:{Context.Channel.Id}:{closingMessage.Id}:{helper.Id}:{helper != user}:{(isHelper2 ? helper2!.Id : null)}:{(isHelper2 ? helper2 != user : null)}", configuration.Interaction.ApproveButtonLabel, ButtonStyle.Success),
-                ]),
-            ],
-        });
+        await PostsHelper.SendPostResolveMessages(channelId, Context.User.Id, helper.Id, helper2?.Id, Context.Client.Rest, configuration);
 
         return InteractionCallback.DeferredModifyMessage;
     }
