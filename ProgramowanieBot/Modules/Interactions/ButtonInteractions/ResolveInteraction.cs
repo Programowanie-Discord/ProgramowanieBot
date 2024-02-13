@@ -23,7 +23,7 @@ public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Confi
             if (await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved))
                 throw new(configuration.Interaction.PostAlreadyResolvedResponse);
 
-        await PostsHelper.SendPostResolveMessages(channelId, Context.User.Id, helperId, null, Context.Client.Rest, configuration);
+        await PostsHelper.SendPostResolveMessagesAsync(channelId, Context.User.Id, helperId, null, Context.Client.Rest, configuration);
 
         return InteractionCallback.DeferredModifyMessage;
     }

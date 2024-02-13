@@ -43,7 +43,7 @@ internal static class PostsHelper
             post.PostResolveReminderCounter++;
     }
 
-    public static async Task SendPostResolveMessages(ulong channelId, ulong userId, ulong helperId, ulong? helper2Id, RestClient rest, Configuration configuration)
+    public static async Task SendPostResolveMessagesAsync(ulong channelId, ulong userId, ulong helperId, ulong? helper2Id, RestClient rest, Configuration configuration)
     {;
         var isHelper2 = helper2Id != null && helperId != helper2Id;
         var closingMessage = await rest.SendMessageAsync(channelId, new()

@@ -32,7 +32,7 @@ public class ResolveCommand(IServiceProvider serviceProvider, IOptions<Configura
             if (await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved))
                 throw new(configuration.Interaction.PostAlreadyResolvedResponse);
 
-        await PostsHelper.SendPostResolveMessages(channelId, Context.User.Id, helper.Id, helper2?.Id, Context.Client.Rest, configuration);
+        await PostsHelper.SendPostResolveMessagesAsync(channelId, Context.User.Id, helper.Id, helper2?.Id, Context.Client.Rest, configuration);
 
         return InteractionCallback.DeferredModifyMessage;
     }

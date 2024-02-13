@@ -40,7 +40,7 @@ public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Confi
         else
             helper2 = null;
 
-        await PostsHelper.SendPostResolveMessages(channelId, Context.User.Id, helper.Id, helper2?.Id, Context.Client.Rest, configuration);
+        await PostsHelper.SendPostResolveMessagesAsync(channelId, Context.User.Id, helper.Id, helper2?.Id, Context.Client.Rest, configuration);
 
         return InteractionCallback.DeferredModifyMessage;
     }
