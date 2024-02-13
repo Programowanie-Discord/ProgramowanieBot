@@ -13,7 +13,7 @@ namespace ProgramowanieBot.InteractionHandlerModules.Interactions.ButtonInteract
 public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Configuration> options) : InteractionModule<ButtonInteractionContext>
 {
     [Interaction("resolve")]
-    public async Task<InteractionCallback> ResolveAsync(ulong helper)
+    public async Task<InteractionCallback> ResolveAsync(ulong helperId)
     {
         var configuration = options.Value;
 
@@ -25,7 +25,7 @@ public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Confi
 
         var closingMessage = await Context.Channel.SendMessageAsync(new()
         {
-            Content = $"**{configuration.Emojis.Success} {string.Format(configuration.Interaction.WaitingForApprovalMessage, $"<@{helper}>")}**",
+            Content = $"**{configuration.Emojis.Success} {string.Format(configuration.Interaction.WaitingForApprovalMessage, $"<@{helperId}>")}**",
             AllowedMentions = AllowedMentionsProperties.None,
         });
 
@@ -36,7 +36,7 @@ public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Confi
             [
                 new ActionRowProperties(
                 [
-                    new ActionButtonProperties($"approve:{Context.Channel.Id}:{closingMessage.Id}:{helper}:{helper != Context.User.Id}::", configuration.Interaction.ApproveButtonLabel, ButtonStyle.Success),
+                    new ActionButtonProperties($"approve:{Context.Channel.Id}:{closingMessage.Id}:{helperId}:{helperId != Context.User.Id}::", configuration.Interaction.ApproveButtonLabel, ButtonStyle.Success),
                 ]),
             ],
         });
