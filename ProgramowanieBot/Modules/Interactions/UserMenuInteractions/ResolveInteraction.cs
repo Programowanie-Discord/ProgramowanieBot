@@ -7,6 +7,7 @@ using NetCord.Rest;
 using NetCord.Services.Interactions;
 
 using ProgramowanieBot.Data;
+using ProgramowanieBot.Helpers;
 
 namespace ProgramowanieBot.InteractionHandlerModules.Interactions.UserMenuInteractions;
 
@@ -16,9 +17,8 @@ public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Confi
     public async Task<InteractionCallback> ResolveAsync()
     {
         var configuration = options.Value;
+        var channelId = Context.Channel.Id;
 
-        var channel = Context.Channel;
-        var channelId = channel.Id;
         await using (var context = serviceProvider.GetRequiredService<DataContext>())
             if (await context.Posts.AnyAsync(p => p.PostId == channelId && p.IsResolved))
                 throw new(configuration.Interaction.PostAlreadyResolvedResponse);
@@ -40,20 +40,8 @@ public class ResolveInteraction(IServiceProvider serviceProvider, IOptions<Confi
         else
             helper2 = null;
 
-        await Context.Client.Rest.SendMessageAsync(configuration.Interaction.PostResolvedNotificationChannelId, $"**{string.Format(configuration.Interaction.PostResolvedNotificationMessage, channel)}**");
+        await PostsHelper.SendPostResolveMessagesAsync(channelId, Context.User.Id, helper.Id, helper2?.Id, Context.Client.Rest, configuration);
 
-        var user = Context.User;
-        return InteractionCallback.Message(new()
-        {
-            Content = $"**{configuration.Emojis.Success} {(isHelper2 ? string.Format(configuration.Interaction.WaitingForApprovalWith2HelpersResponse, helper, helper2) : string.Format(configuration.Interaction.WaitingForApprovalResponse, helper))}**",
-            Components =
-            [
-                new ActionRowProperties(
-                [
-                    new ActionButtonProperties($"approve:{helper.Id}:{helper != user}:{(isHelper2 ? helper2!.Id : null)}:{(isHelper2 ? helper2 != user : null)}", configuration.Interaction.ApproveButtonLabel, ButtonStyle.Success),
-                ]),
-            ],
-            AllowedMentions = AllowedMentionsProperties.None,
-        });
+        return InteractionCallback.DeferredModifyMessage;
     }
 }
