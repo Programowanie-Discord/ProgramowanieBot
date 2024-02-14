@@ -52,7 +52,6 @@ internal static class PostsHelper
             AllowedMentions = AllowedMentionsProperties.None,
         });
 
-
         await rest.SendMessageAsync(configuration.Interaction.PostResolvedNotificationChannelId, new()
         {
             Content = $"**{string.Format(configuration.Interaction.PostResolvedNotificationMessage, $"<#{channelId}>")}**",
