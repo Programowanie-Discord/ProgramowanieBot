@@ -40,7 +40,6 @@ public class ResolveCommand(IServiceProvider serviceProvider, IOptions<Configura
             Content = configuration.Emojis.Success,
             Flags = MessageFlags.Ephemeral
         });
-
     }
 
     public class NameTranslationsProvider : ITranslationsProvider
