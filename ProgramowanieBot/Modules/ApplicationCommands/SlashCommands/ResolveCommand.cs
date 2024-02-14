@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections;
+using System.Globalization;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,7 +35,12 @@ public class ResolveCommand(IServiceProvider serviceProvider, IOptions<Configura
 
         await PostsHelper.SendPostResolveMessagesAsync(channelId, Context.User.Id, helper.Id, helper2?.Id, Context.Client.Rest, configuration);
 
-        return InteractionCallback.DeferredModifyMessage;
+        return InteractionCallback.Message(new()
+        {
+            Content = configuration.Emojis.Success,
+            Flags = MessageFlags.Ephemeral
+        });
+
     }
 
     public class NameTranslationsProvider : ITranslationsProvider
